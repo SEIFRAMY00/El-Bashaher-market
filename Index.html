@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>نظام البشاير ماركت</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f0f2f8;color:#172033;font-family:'Segoe UI',Arial,Tahoma,sans-serif;transition:background 0.3s,color 0.3s}
+body.dark-mode{background:#0f172a;color:#e2e8f0}
+body.locked{overflow:hidden}
+.lock-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px}
+.lock-overlay .lock-box{background:#fff;border-radius:24px;padding:40px;max-width:400px;width:100%;text-align:center}
+body.dark-mode .lock-overlay .lock-box{background:#1e293b}
+.lock-overlay .lock-box h2{color:#0f172a;margin-bottom:20px;border-bottom:none}
+body.dark-mode .lock-overlay .lock-box h2{color:#e2e8f0}
+.lock-overlay .lock-box input{padding:14px;border:2px solid #e2e8f0;border-radius:12px;font-size:16px;width:100%;margin-bottom:12px;text-align:center}
+.lock-overlay .lock-box .btn-save{width:100%;padding:14px}
+.lock-overlay .lock-box .error{color:#dc2626;font-size:13px;margin-top:8px}
+header{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;padding:18px 12px;position:sticky;top:0;z-index:10;box-shadow:0 4px 20px rgba(0,0,0,0.15)}
+body.dark-mode header{background:linear-gradient(135deg,#020617,#0f172a)}
+.wrap{max-width:1200px;margin:auto;padding:0 10px}
+.brand{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.brand h1{margin:0;font-size:22px;font-weight:800}
+.brand h1 span{background:linear-gradient(135deg,#60a5fa,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.brand small{color:#94a3b8}
+nav{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+button{border:0;border-radius:12px;padding:12px 18px;font-weight:700;font-size:14px;cursor:pointer;transition:all 0.25s}
+button:hover{transform:translateY(-2px)}
+.nav{flex:1;background:#ffffff12;color:#e2e8f0;min-width:80px;text-align:center}
+.nav.active{background:#fff;color:#0f172a;box-shadow:0 4px 16px rgba(0,0,0,0.12)}
+body.dark-mode .nav.active{background:#1e293b;color:#e2e8f0}
+.page{display:none}.page.active{display:block}
+.card{background:#fff;border-radius:20px;padding:22px;margin:16px 0;box-shadow:0 4px 24px rgba(0,0,0,0.06);border:1px solid rgba(226,232,240,0.6)}
+body.dark-mode .card{background:#1e293b;border-color:#334155}
+.card:hover{box-shadow:0 8px 32px rgba(0,0,0,0.08)}
+h2{font-size:18px;margin:0 0 18px;color:#0f172a;display:flex;align-items:center;gap:10px;padding-bottom:12px;border-bottom:2px solid #f1f5f9}
+body.dark-mode h2{color:#e2e8f0;border-bottom-color:#334155}
+.grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+label{display:block;font-weight:700;font-size:13px;color:#475569;margin-bottom:6px}
+body.dark-mode label{color:#94a3b8}
+input,select,textarea{width:100%;padding:13px 14px;border:2px solid #e2e8f0;border-radius:12px;font-size:15px;outline:none;background:#fafbfc}
+body.dark-mode input,body.dark-mode select,body.dark-mode textarea{background:#0f172a;border-color:#334155;color:#e2e8f0}
+input:focus,select:focus,textarea:focus{border-color:#6366f1;box-shadow:0 0 0 4px rgba(99,102,241,0.12)}
+.transaction-input{display:grid;grid-template-columns:1fr auto;gap:10px}
+.pay{background:#f8fafc;border:2px solid #e2e8f0;border-radius:16px;padding:18px}
+body.dark-mode .pay{background:#0f172a;border-color:#334155}
+.pay:hover{background:#f1f5f9}
+body.dark-mode .pay:hover{background:#1e293b}
+.pay h3{margin:0 0 12px;font-size:15px;font-weight:800}
+.cash h3{color:#059669}.insta h3{color:#7c3aed}.visa h3{color:#2563eb}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.btn-add{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:13px 20px;border-radius:12px;font-weight:700;box-shadow:0 4px 12px rgba(99,102,241,0.25)}
+.btn-add:hover{box-shadow:0 6px 20px rgba(99,102,241,0.35)}
+.btn-save{background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;padding:13px 28px;border-radius:12px;font-weight:700}
+.btn-save:hover{box-shadow:0 6px 20px rgba(15,23,42,0.3)}
+body.dark-mode .btn-save{background:linear-gradient(135deg,#1e293b,#334155)}
+.btn-light{background:#f1f5f9;color:#334155;padding:13px 22px;border-radius:12px;font-weight:700;border:2px solid #e2e8f0}
+.btn-light:hover{background:#e2e8f0}
+body.dark-mode .btn-light{background:#334155;color:#e2e8f0;border-color:#475569}
+body.dark-mode .btn-light:hover{background:#475569}
+.danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;padding:13px 22px;border-radius:12px;font-weight:700}
+.danger:hover{box-shadow:0 6px 20px rgba(239,68,68,0.3)}
+.success{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;padding:13px 22px;border-radius:12px;font-weight:700}
+.success:hover{box-shadow:0 6px 20px rgba(34,197,94,0.3)}
+.warning{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:13px 22px;border-radius:12px;font-weight:700}
+.warning:hover{box-shadow:0 6px 20px rgba(245,158,11,0.3)}
+.pending{margin-top:14px}
+.pending-title{font-size:13px;color:#64748b;margin-bottom:10px;font-weight:700;display:flex;align-items:center;gap:8px}
+body.dark-mode .pending-title{color:#94a3b8}
+.pending-title .count{background:#e2e8f0;padding:0 12px;border-radius:999px;font-size:12px}
+body.dark-mode .pending-title .count{background:#334155;color:#e2e8f0}
+.item-card{position:relative;background:#fff;border:2px solid #e2e8f0;border-radius:14px;padding:16px 16px 16px 160px;margin:10px 0}
+body.dark-mode .item-card{background:#0f172a;border-color:#334155}
+.item-card:hover{border-color:#cbd5e1}
+body.dark-mode .item-card:hover{border-color:#475569}
+.item-card .actions{position:absolute;left:14px;top:50%;transform:translateY(-50%);display:flex;gap:8px}
+.item-card .actions button{padding:7px 14px;border-radius:10px;font-size:12px;font-weight:700}
+.item-card .actions .delete-btn{background:#fef2f2;color:#dc2626}
+.item-card .actions .delete-btn:hover{background:#fecaca}
+body.dark-mode .item-card .actions .delete-btn{background:#450a0a;color:#f87171}
+body.dark-mode .item-card .actions .delete-btn:hover{background:#7f1d1d}
+.item-card .actions .edit-btn{background:#eff6ff;color:#2563eb}
+.item-card .actions .edit-btn:hover{background:#bfdbfe}
+body.dark-mode .item-card .actions .edit-btn{background:#1e293b;color:#60a5fa}
+body.dark-mode .item-card .actions .edit-btn:hover{background:#334155}
+.item-card .money{font-size:21px;font-weight:800;color:#0f172a}
+body.dark-mode .item-card .money{color:#e2e8f0}
+.item-card .meta{color:#64748b;font-size:12px;margin-top:6px;display:flex;gap:12px;flex-wrap:wrap}
+body.dark-mode .item-card .meta{color:#94a3b8}
+.item-card .type-badge{display:inline-block;padding:3px 14px;border-radius:999px;font-size:12px;font-weight:700;background:#eef2ff;color:#4338ca}
+body.dark-mode .item-card .type-badge{background:#1e293b;color:#818cf8}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat{background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;padding:16px}
+body.dark-mode .stat{background:#0f172a;border-color:#334155}
+.stat:hover{background:#f1f5f9}
+body.dark-mode .stat:hover{background:#1e293b}
+.stat small{display:block;color:#64748b;font-size:12px;font-weight:600;margin-bottom:4px}
+body.dark-mode .stat small{color:#94a3b8}
+.stat b{font-size:22px;color:#0f172a}
+body.dark-mode .stat b{color:#e2e8f0}
+.stat .currency{font-size:14px;color:#94a3b8;font-weight:400}
+.result{text-align:center;border-radius:16px;padding:22px;background:#eef2ff;border:2px solid #c7d2fe}
+body.dark-mode .result{background:#1e293b;border-color:#334155}
+.result .big{font-size:34px;font-weight:800;margin:8px 0}
+.ok{background:#ecfdf5;border-color:#6ee7b7;color:#065f46}
+.bad{background:#fff7ed;border-color:#fdba74;color:#9a3412}
+body.dark-mode .ok{background:#064e3b;border-color:#059669;color:#6ee7b7}
+body.dark-mode .bad{background:#78350f;border-color:#d97706;color:#fbbf24}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.entry{padding:16px;border:2px solid #e2e8f0;border-radius:14px;margin:10px 0;background:#fff}
+body.dark-mode .entry{background:#0f172a;border-color:#334155}
+.entry:hover{border-color:#cbd5e1}
+body.dark-mode .entry:hover{border-color:#475569}
+.head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.badge{background:#eef2ff;color:#4338ca;padding:4px 14px;border-radius:999px;font-size:11px;font-weight:700}
+body.dark-mode .badge{background:#1e293b;color:#818cf8}
+.amount{font-size:22px;font-weight:800;margin:6px 0}
+.out{color:#dc2626}.in{color:#059669}
+body.dark-mode .out{color:#f87171}
+body.dark-mode .in{color:#34d399}
+.empty{text-align:center;padding:50px 20px;color:#94a3b8;font-size:16px;font-weight:500}
+.empty .big-icon{font-size:48px;display:block;margin-bottom:12px}
+.filters{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.quick-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.quick-actions .btn-add{flex:1;min-width:100px}
+.setting-group{background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;padding:18px;margin-bottom:16px}
+body.dark-mode .setting-group{background:#0f172a;border-color:#334155}
+.setting-group h3{font-size:15px;margin:0 0 12px;color:#0f172a}
+body.dark-mode .setting-group h3{color:#e2e8f0}
+.setting-row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:8px 0}
+.setting-row label{min-width:140px;margin:0;font-weight:600;font-size:13px}
+.setting-row input[type="color"]{width:60px;padding:4px;height:45px}
+.setting-row input[type="number"]{width:120px}
+.setting-row .note{color:#94a3b8;font-size:12px}
+body.dark-mode .setting-row .note{color:#64748b}
+.invoice-card{background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;padding:14px;margin:8px 0}
+body.dark-mode .invoice-card{background:#0f172a;border-color:#334155}
+.invoice-card .inv-total{font-weight:700;font-size:16px;color:#0f172a}
+body.dark-mode .invoice-card .inv-total{color:#e2e8f0}
+.invoice-card .inv-rider{color:#64748b}
+body.dark-mode .invoice-card .inv-rider{color:#94a3b8}
+.invoice-card .inv-paid{color:#059669;font-weight:700}
+.invoice-card .inv-remaining{color:#dc2626;font-weight:700}
+body.dark-mode .invoice-card .inv-remaining{color:#f87171}
+.credits{text-align:center;padding:20px;color:#64748b;font-size:14px;border-top:2px solid #e2e8f0;margin-top:20px}
+body.dark-mode .credits{color:#94a3b8;border-top-color:#334155}
+.credits strong{color:#6366f1}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;padding:14px;text-align:center}
+body.dark-mode .stat-card{background:#0f172a;border-color:#334155}
+.stat-card .stat-number{font-size:24px;font-weight:800;color:#0f172a}
+body.dark-mode .stat-card .stat-number{color:#e2e8f0}
+.stat-card .stat-label{font-size:12px;color:#64748b;font-weight:600}
+body.dark-mode .stat-card .stat-label{color:#94a3b8}
+.stats-section{margin-bottom:20px}
+.stats-section h3{font-size:16px;color:#0f172a;margin:0 0 12px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}
+body.dark-mode .stats-section h3{color:#e2e8f0;border-bottom-color:#334155}
+.stats-mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.stats-mini-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;text-align:center}
+body.dark-mode .stats-mini-card{background:#0f172a;border-color:#334155}
+.stats-mini-card .number{font-size:20px;font-weight:800}
+.stats-mini-card .label{font-size:11px;color:#64748b;font-weight:600}
+body.dark-mode .stats-mini-card .label{color:#94a3b8}
+.date-filter{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px;padding:12px;background:#f8fafc;border-radius:12px;border:2px solid #e2e8f0}
+body.dark-mode .date-filter{background:#0f172a;border-color:#334155}
+.date-filter label{font-weight:600;font-size:13px;margin:0}
+.date-filter input{width:auto;flex:1;min-width:150px}
+.date-filter .btn-light{padding:8px 16px}
+.date-range-info{font-size:13px;color:#64748b;font-weight:600;padding:6px 12px;background:#e2e8f0;border-radius:8px}
+body.dark-mode .date-range-info{background:#334155;color:#94a3b8}
+.chart-container{height:250px;margin:16px 0;position:relative}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.backup-item{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+body.dark-mode .backup-item{background:#0f172a;border-color:#334155}
+.backup-item .backup-info{font-size:14px}
+.backup-item .backup-info strong{color:#0f172a}
+body.dark-mode .backup-item .backup-info strong{color:#e2e8f0}
+.backup-item .backup-info small{color:#64748b}
+body.dark-mode .backup-item .backup-info small{color:#94a3b8}
+.amount-split{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.amount-split > div{flex:1;min-width:70px}
+.amount-split input{width:100%}
+.amount-split label{font-size:11px;font-weight:600;margin:0 0 4px;color:#475569}
+body.dark-mode .amount-split label{color:#94a3b8}
+.amount-split .guarantor-label{color:#8b5cf6}
+.amount-split .total-box{flex:0 0 80px}
+.amount-split .total-box input{background:#e2e8f0;font-weight:700;color:#0f172a}
+body.dark-mode .amount-split .total-box input{background:#334155;color:#e2e8f0}
+@media(max-width:700px){.grid2,.grid3,.cols3,.summary,.filters,.chart-grid{grid-template-columns:1fr}.transaction-input{grid-template-columns:1fr}.brand h1{font-size:17px}.item-card{padding:16px;padding-bottom:70px}.item-card .actions{position:static;transform:none;margin-top:12px;justify-content:flex-end}.setting-row{flex-direction:column;align-items:flex-start}.date-filter input{min-width:100px}.amount-split{gap:4px}.amount-split > div{min-width:60px}.amount-split .total-box{flex:0 0 70px}}
+</style>
+</head>
+<body>
+<style>
+#cloudGate{position:fixed;inset:0;background:rgba(8,15,30,.96);z-index:100000;display:flex;align-items:center;justify-content:center;padding:18px;font-family:inherit}
+#cloudBox{width:min(460px,100%);background:#fff;border-radius:24px;padding:24px;box-shadow:0 25px 80px rgba(0,0,0,.35);direction:rtl}
+#cloudBox h2{margin:0 0 8px;font-size:25px;color:#111827}#cloudBox p{color:#64748b;line-height:1.7;margin:6px 0 18px}
+.cloud-input{width:100%;padding:13px 14px;border:1px solid #dbe2ea;border-radius:12px;margin:6px 0;font-size:15px;outline:none}
+.cloud-btn{width:100%;padding:13px;border:0;border-radius:12px;margin-top:9px;font-weight:700;font-size:15px;cursor:pointer;background:#111827;color:#fff}.cloud-btn.alt{background:#e8eef7;color:#172033}.cloud-btn.warn{background:#f59e0b;color:#111827}
+.cloud-status{padding:10px 12px;border-radius:10px;background:#f1f5f9;color:#475569;margin:10px 0;font-size:13px;line-height:1.6}.cloud-hide{display:none!important}
+#cloudUser{position:fixed;top:12px;left:12px;z-index:9998;background:#fff;border-radius:12px;padding:8px 11px;box-shadow:0 5px 20px rgba(0,0,0,.12);font-size:12px;color:#334155}
+body.dark-mode #cloudUser{background:#1e293b;color:#e2e8f0}
+</style>
+<div id="cloudGate">
+ <div id="cloudBox">
+  <h2>☁️ البشاير ماركت — V6</h2>
+  <p id="cloudIntro">سجّل الدخول لاستخدام نفس بيانات النظام من أكثر من جهاز.</p>
+  <div id="cloudSetup" class="cloud-hide">
+   <div class="cloud-status">أول مرة فقط: أنشئ مشروع Firebase، فعّل Email/Password وFirestore، ثم ضع بيانات Web App هنا. بيانات Firebase هذه ليست كلمة سر.</div>
+   <input class="cloud-input" id="fbApiKey" placeholder="apiKey">
+   <input class="cloud-input" id="fbAuthDomain" placeholder="authDomain">
+   <input class="cloud-input" id="fbProjectId" placeholder="projectId">
+   <input class="cloud-input" id="fbStorageBucket" placeholder="storageBucket (اختياري)">
+   <input class="cloud-input" id="fbMessagingSenderId" placeholder="messagingSenderId (اختياري)">
+   <input class="cloud-input" id="fbAppId" placeholder="appId">
+   <button class="cloud-btn" onclick="saveFirebaseConfig()">حفظ وربط النظام</button>
+   <button class="cloud-btn alt" onclick="showCloudLogin()">رجوع لتسجيل الدخول</button>
+  </div>
+  <div id="cloudLogin">
+   <input class="cloud-input" id="cloudEmail" type="email" placeholder="البريد الإلكتروني">
+   <input class="cloud-input" id="cloudPassword" type="password" placeholder="كلمة المرور">
+   <button class="cloud-btn" onclick="cloudLogin()">🔐 تسجيل الدخول</button>
+   <button class="cloud-btn alt" onclick="cloudSignup()">➕ إنشاء حساب جديد</button>
+   <button class="cloud-btn warn" onclick="showCloudSetup()">⚙️ إعداد الربط لأول مرة</button>
+   <div class="cloud-status" id="cloudStatus">غير متصل</div>
+  </div>
+ </div>
+</div>
+<div id="cloudUser" class="cloud-hide"></div>
+
+<!-- Lock Screen Overlay -->
+<div id="lockOverlay" class="lock-overlay" style="display:none">
+<div class="lock-box">
+<h2>🔒 قفل الشاشة</h2>
+<p style="color:#64748b;margin-bottom:16px">أدخل كلمة المرور لفتح التطبيق</p>
+<input type="password" id="lockPassword" placeholder="كلمة المرور" onkeydown="if(event.key==='Enter') unlockApp()">
+<div id="lockError" class="error" style="display:none">❌ كلمة المرور غير صحيحة</div>
+<button class="btn-save" onclick="unlockApp()">🔓 فتح</button>
+</div>
+</div>
+
+<header><div class="wrap">
+<div class="brand">
+<div><h1><span>البشاير ماركت</span></h1><small>نظام إدارة الوردية والتقفيل</small></div>
+<span id="clock" style="font-weight:600;color:#94a3b8;font-size:15px;background:#ffffff12;padding:6px 16px;border-radius:999px"></span>
+</div>
+<nav>
+<button class="nav active" id="homeNav" onclick="showPage('home')">🏠 الرئيسية</button>
+<button class="nav" id="logNav" onclick="showPage('log')">📚 السجل</button>
+<button class="nav" id="statsNav" onclick="showPage('stats')">📊 الإحصائيات</button>
+<button class="nav" id="invoicesNav" onclick="showPage('invoices')">🧾 الفواتير</button>
+<button class="nav" id="settingsNav" onclick="showPage('settings')">⚙️ الإعدادات</button>
+</nav>
+</div></header>
+
+<main class="wrap">
+<!-- HOME PAGE -->
+<section id="home" class="page active">
+<div class="card">
+<h2>🟢 بداية الوردية</h2>
+<div class="grid2">
+<div><label>👤 اسم المستخدم</label><input id="user" placeholder="اكتب اسم المستخدم"></div>
+<div><label>📋 اسم / رقم الوردية</label><input id="shift" placeholder="مثال: صباحية 1"></div>
+<div><label>📅 تاريخ ووقت البداية</label><input id="start" type="datetime-local"></div>
+<div><label>💰 رصيد الدرج الافتتاحي</label><input id="drawerBalance" type="number" min="0" step=".01" placeholder="0" oninput="calc()"></div>
+</div>
+</div>
+
+<div class="card">
+<h2>💳 المعاملات</h2>
+<div class="cols3">
+<div class="pay cash">
+<h3>💵 كاش</h3>
+<div class="transaction-input"><input id="cashInput" type="number" min="0" step=".01" placeholder="المبلغ"><button class="btn-add" onclick="addTransaction('كاش','cashInput')">إضافة</button></div>
+<div id="cashPending" class="pending"></div>
+</div>
+<div class="pay insta">
+<h3>🟣 إنستا باي</h3>
+<div class="transaction-input"><input id="instaInput" type="number" min="0" step=".01" placeholder="المبلغ"><button class="btn-add" onclick="addTransaction('إنستا باي','instaInput')">إضافة</button></div>
+<div id="instaPending" class="pending"></div>
+</div>
+<div class="pay visa">
+<h3>💳 فيزا</h3>
+<div class="transaction-input"><input id="visaInput" type="number" min="0" step=".01" placeholder="المبلغ"><button class="btn-add" onclick="addTransaction('فيزا','visaInput')">إضافة</button></div>
+<div id="visaPending" class="pending"></div>
+</div>
+</div>
+<p style="color:#64748b;font-size:13px;margin-top:14px;font-weight:500">📌 المعاملات تظهر هنا. لن تدخل السجل إلا عند <strong>قفل الوردية</strong>.</p>
+</div>
+
+<div class="card">
+<h2>💸 المسحوبات</h2>
+<div class="grid2">
+<div><label>📝 اسم / سبب المسحوبة</label><input id="wName" placeholder="مثال: سحب نقدية"></div>
+<div><label>💰 المبلغ</label><input id="wAmount" type="number" min="0" step=".01" placeholder="0"></div>
+</div>
+<div class="quick-actions"><button class="btn-add" onclick="addNamed('withdrawals','wName','wAmount')">➕ إضافة مسحوبة</button></div>
+<div id="withdrawalsPending"></div>
+</div>
+
+<div class="card">
+<h2>🛵 المناديب (مصروف)</h2>
+<div class="grid2">
+<div><label>👤 اسم المندوب</label><input id="rName" placeholder="اسم المندوب"></div>
+<div style="border:2px solid #e2e8f0;border-radius:12px;padding:12px;background:#f8fafc">
+<label style="font-size:12px;font-weight:700;color:#475569">💰 تفاصيل المبلغ (مصروف)</label>
+<div class="amount-split">
+<div><label>من العهدة</label><input id="rAdvance" type="number" min="0" step=".01" placeholder="0" oninput="calcRiderTotal()"></div>
+<div><label>من الدرج</label><input id="rDrawer" type="number" min="0" step=".01" placeholder="0" oninput="calcRiderTotal()"></div>
+<div><label class="guarantor-label">🛡️ ضامن (غير محسوب)</label><input id="rGuarantor" type="number" min="0" step=".01" placeholder="0" oninput="calcRiderTotal()"></div>
+<div class="total-box"><label>الإجمالي</label><input id="rTotal" type="text" readonly></div>
+</div>
+</div>
+</div>
+<div class="quick-actions"><button class="btn-add" onclick="addRider()">➕ إضافة مصروف مندوب</button></div>
+<div id="ridersPending"></div>
+</div>
+
+<div class="card">
+<h2>💰 تحصيل من المناديب</h2>
+<div class="grid2">
+<div><label>👤 اسم المندوب</label><input id="collectRider" placeholder="اسم المندوب"></div>
+<div><label>💰 المبلغ</label><input id="collectAmount" type="number" min="0" step=".01" placeholder="0"></div>
+</div>
+<div class="quick-actions"><button class="btn-add" onclick="collectFromRider()">➕ إضافة تحصيل</button></div>
+<div id="collectionsPending" class="pending"></div>
+</div>
+
+<div class="card">
+<h2>🧾 النثريات</h2>
+<div class="grid2">
+<div><label>📝 سبب النثرية</label><input id="pName" placeholder="مثال: مياه / أدوات"></div>
+<div><label>💰 المبلغ</label><input id="pAmount" type="number" min="0" step=".01" placeholder="0"></div>
+</div>
+<div class="quick-actions"><button class="btn-add" onclick="addNamed('petty','pName','pAmount')">➕ إضافة نثرية</button></div>
+<div id="pettyPending"></div>
+</div>
+
+<div class="card">
+<h2>📒 الآجل</h2>
+<div class="grid2">
+<div><label>👤 اسم العميل / البيان</label><input id="cName" placeholder="اسم العميل"></div>
+<div><label>💰 المبلغ</label><input id="cAmount" type="number" min="0" step=".01" placeholder="0"></div>
+</div>
+<div class="quick-actions"><button class="btn-add" onclick="addNamed('credit','cName','cAmount')">➕ إضافة آجل</button></div>
+<div id="creditPending"></div>
+</div>
+
+<div class="card">
+<h2>📊 التقفيل</h2>
+<div class="grid2">
+<div><label>📈 الرصيد المتوقع في الدرج</label><input id="expected" type="number" min="0" step=".01" placeholder="0" oninput="calc()"></div>
+<div><label>💵 النقدية الحقيقية في الدرج</label><input id="actual" type="number" min="0" step=".01" placeholder="0" oninput="calc()"></div>
+</div>
+<div style="height:14px"></div>
+<div class="summary">
+<div class="stat"><small>رصيد الدرج الافتتاحي</small><b id="tdrawer">0.00</b> <span class="currency">ج</span></div>
+<div class="stat"><small>المعاملات</small><b id="tt">0.00</b> <span class="currency">ج</span></div>
+<div class="stat"><small>المسحوبات</small><b id="tw">0.00</b> <span class="currency">ج</span></div>
+<div class="stat"><small>النثريات</small><b id="tp">0.00</b> <span class="currency">ج</span></div>
+<div class="stat"><small>الآجل</small><b id="tc">0.00</b> <span class="currency">ج</span></div>
+<div class="stat"><small>المناديب (من الدرج)</small><b id="tr">0.00</b> <span class="currency">ج</span></div>
+<div class="stat"><small>المناديب (من العهدة)</small><b id="trAdvance">0.00</b> <span class="currency">ج</span></div>
+<div class="stat"><small>ضامن (غير محسوب)</small><b id="tguarantor">0.00</b> <span class="currency">ج</span></div>
+<div class="stat"><small>تحصيل مناديب</small><b id="tcol">0.00</b> <span class="currency">ج</span></div>
+<div class="stat"><small>إجمالي المصروفات</small><b id="te">0.00</b> <span class="currency">ج</span></div>
+<div class="stat"><small>الرصيد المتوقع</small><b id="ev">0.00</b> <span class="currency">ج</span></div>
+<div class="stat"><small>النقدية</small><b id="av">0.00</b> <span class="currency">ج</span></div>
+</div>
+<div style="height:14px"></div>
+<div id="result" class="result"><div style="font-weight:600;color:#475569">📌 العجز / الزيادة</div><div class="big" id="difference">0.00 جنيه</div><div id="diffText" style="font-weight:500">أدخل الرصيد المتوقع والنقدية.</div></div>
+<div class="actions">
+<button class="btn-save" onclick="closeShift()">🔒 قفل وحفظ الوردية</button>
+<button class="btn-light" onclick="clearCurrent()">🔄 وردية جديدة</button>
+<button class="btn-light" onclick="copyReport()">📋 نسخ التقرير</button>
+<button class="success" onclick="shareWhatsApp()">📱 مشاركة واتساب</button>
+</div>
+</div>
+</section>
+
+<!-- LOG PAGE -->
+<section id="log" class="page">
+<div class="card">
+<h2>📚 السجل</h2>
+<div class="filters">
+<input id="search" placeholder="🔎 بحث بالاسم أو الوردية أو النوع" oninput="renderLog()">
+<select id="filter" onchange="renderLog()"><option value="">كل الأنواع</option><option>كاش</option><option>إنستا باي</option><option>فيزا</option><option>مسحوبات</option><option>مناديب</option><option>نثريات</option><option>آجل</option><option>تحصيل مناديب</option><option>تقفيل</option></select>
+<select id="shiftFilter" onchange="renderLog()"><option value="">كل الورديات</option></select>
+</div>
+<div id="logList"></div>
+<div class="actions">
+<button class="btn-light" onclick="exportCSV()">📊 تصدير CSV</button>
+<button class="success" onclick="shareLogWhatsApp()">📱 مشاركة السجل واتساب</button>
+<button class="danger" onclick="wipe()">🗑️ حذف السجل بالكامل</button>
+</div>
+</div>
+</section>
+
+<!-- STATS PAGE -->
+<section id="stats" class="page">
+<div class="card">
+<h2>📊 الإحصائيات المتقدمة</h2>
+
+<div class="date-filter">
+<label>📅 من:</label>
+<input type="date" id="statsFrom" onchange="updateStats()">
+<label>إلى:</label>
+<input type="date" id="statsTo" onchange="updateStats()">
+<button class="btn-light" onclick="setToday()">📆 اليوم</button>
+<button class="btn-light" onclick="setWeek()">📅 هذا الأسبوع</button>
+<button class="btn-light" onclick="setMonth()">📅 هذا الشهر</button>
+<button class="btn-light" onclick="clearDateFilter()">🗑️ مسح</button>
+<span id="dateRangeInfo" class="date-range-info">📊 عرض كل الفترة</span>
+<button class="success" onclick="shareStatsWhatsApp()">📱 مشاركة الإحصائيات</button>
+</div>
+
+<div class="stats-section">
+<h3>📌 مؤشرات الأداء الرئيسية</h3>
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-number" id="totalTransactions">0</div><div class="stat-label">إجمالي المعاملات</div></div>
+<div class="stat-card"><div class="stat-number" id="totalAmount">0.00 ج</div><div class="stat-label">إجمالي المبالغ</div></div>
+<div class="stat-card"><div class="stat-number" id="avgAmount">0.00 ج</div><div class="stat-label">متوسط المعاملة</div></div>
+<div class="stat-card"><div class="stat-number" id="totalShifts">0</div><div class="stat-label">عدد الورديات</div></div>
+<div class="stat-card"><div class="stat-number" id="maxShift">0.00 ج</div><div class="stat-label">أعلى وردية</div></div>
+<div class="stat-card"><div class="stat-number" id="minShift">0.00 ج</div><div class="stat-label">أقل وردية</div></div>
+<div class="stat-card"><div class="stat-number" id="totalDrawer">0.00 ج</div><div class="stat-label">إجمالي رصيد الدرج</div></div>
+</div>
+</div>
+
+<div class="stats-section">
+<h3>💰 المعاملات المالية</h3>
+<div class="stats-mini-grid">
+<div class="stats-mini-card"><div class="number" id="statCash" style="color:#059669">0.00</div><div class="label">💵 كاش</div></div>
+<div class="stats-mini-card"><div class="number" id="statInsta" style="color:#7c3aed">0.00</div><div class="label">🟣 إنستا باي</div></div>
+<div class="stats-mini-card"><div class="number" id="statVisa" style="color:#2563eb">0.00</div><div class="label">💳 فيزا</div></div>
+<div class="stats-mini-card"><div class="number" id="statWithdrawals" style="color:#dc2626">0.00</div><div class="label">💸 مسحوبات</div></div>
+<div class="stats-mini-card"><div class="number" id="statRiders" style="color:#d97706">0.00</div><div class="label">🛵 مناديب (من الدرج)</div></div>
+<div class="stats-mini-card"><div class="number" id="statRidersAdvance" style="color:#d97706">0.00</div><div class="label">🛵 مناديب (من العهدة)</div></div>
+<div class="stats-mini-card"><div class="number" id="statGuarantor" style="color:#8b5cf6">0.00</div><div class="label">🛡️ ضامن (غير محسوب)</div></div>
+<div class="stats-mini-card"><div class="number" id="statCollections" style="color:#8b5cf6">0.00</div><div class="label">💰 تحصيل مناديب</div></div>
+<div class="stats-mini-card"><div class="number" id="statPetty" style="color:#8b5cf6">0.00</div><div class="label">🧾 نثريات</div></div>
+<div class="stats-mini-card"><div class="number" id="statCredit" style="color:#f59e0b">0.00</div><div class="label">📒 آجل</div></div>
+<div class="stats-mini-card"><div class="number" id="statClosing" style="color:#0ea5e9">0.00</div><div class="label">🔒 التقفيل (النقدية)</div></div>
+</div>
+</div>
+
+<div class="chart-grid">
+<div class="stats-section">
+<h3>📊 توزيع المعاملات</h3>
+<div class="chart-container"><canvas id="typeChart"></canvas></div>
+</div>
+<div class="stats-section">
+<h3>📈 اتجاه المعاملات</h3>
+<div class="chart-container"><canvas id="trendChart"></canvas></div>
+</div>
+</div>
+
+<div class="stats-section">
+<h3>📊 توزيع المعاملات التفصيلي</h3>
+<div id="typeBreakdown" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px"></div>
+</div>
+
+<div class="stats-section">
+<h3>🧾 إحصائيات الفواتير</h3>
+<div class="stats-mini-grid">
+<div class="stats-mini-card"><div class="number" id="invoiceCount">0</div><div class="label">عدد الفواتير</div></div>
+<div class="stats-mini-card"><div class="number" id="invoiceTotal" style="color:#059669">0.00</div><div class="label">إجمالي الفواتير</div></div>
+<div class="stats-mini-card"><div class="number" id="invoicePaid" style="color:#2563eb">0.00</div><div class="label">إجمالي المدفوع</div></div>
+<div class="stats-mini-card"><div class="number" id="invoiceRemaining" style="color:#dc2626">0.00</div><div class="label">إجمالي المتبقي</div></div>
+</div>
+</div>
+
+</div>
+</section>
+
+<!-- INVOICES PAGE -->
+<section id="invoices" class="page">
+<div class="card">
+<h2>🧾 إدارة الفواتير</h2>
+<div class="grid3">
+<div><label>💰 سعر الفاتورة</label><input id="invTotal" type="number" min="0" step=".01" placeholder="0"></div>
+<div><label>👤 المندوب</label><input id="invRider" placeholder="اسم المندوب"></div>
+<div><label>💵 المدفوع منها</label><input id="invPaid" type="number" min="0" step=".01" placeholder="0" oninput="calcInvoiceRemaining()"></div>
+<div><label>📝 ملاحظات</label><input id="invNote" placeholder="ملاحظات إضافية"></div>
+<div style="display:flex;align-items:end;gap:8px">
+<label>المتبقي</label>
+<input id="invRemaining" type="text" readonly style="background:#e2e8f0;font-weight:700;color:#0f172a">
+</div>
+</div>
+<p style="color:#64748b;font-size:12px;margin-top:8px">📌 المبلغ المدفوع سيُوزع تلقائياً على فواتير المندوب القديمة المفتوحة (إن وجدت).</p>
+<div class="quick-actions">
+<button class="btn-add" onclick="addInvoice()">➕ إضافة فاتورة</button>
+<button class="btn-light" onclick="clearInvoices()">🗑️ حذف الكل</button>
+<button class="success" onclick="shareInvoicesWhatsApp()">📱 مشاركة الفواتير</button>
+</div>
+<div id="invoiceList" style="margin-top:16px"></div>
+</div>
+</section>
+
+<!-- SETTINGS PAGE -->
+<section id="settings" class="page">
+<div class="card">
+<h2>⚙️ الإعدادات</h2>
+
+<div class="setting-group">
+<h3>🎨 مظهر التطبيق</h3>
+<div class="setting-row">
+<label>🌙 الوضع الليلي</label>
+<select id="darkMode" onchange="toggleDarkMode()" style="width:150px">
+<option value="off">إيقاف</option>
+<option value="on">تشغيل</option>
+</select>
+<span class="note">تبديل المظهر الداكن</span>
+</div>
+<div class="setting-row">
+<label>لون الخلفية الرئيسي</label>
+<input type="color" id="bgColor" value="#f0f2f8" onchange="applySettings()">
+<span class="note">اختر لون الخلفية</span>
+</div>
+<div class="setting-row">
+<label>لون البطاقات</label>
+<input type="color" id="cardColor" value="#ffffff" onchange="applySettings()">
+<span class="note">اختر لون خلفية البطاقات</span>
+</div>
+</div>
+
+<div class="setting-group">
+<h3>💰 العملة</h3>
+<div class="setting-row">
+<label>رمز العملة</label>
+<input type="text" id="currencySymbol" value="ج" style="width:80px" onchange="applySettings()">
+<span class="note">مثال: ج، $، €</span>
+</div>
+<div class="setting-row">
+<label>عدد الأرقام العشرية</label>
+<input type="number" id="decimalPlaces" value="2" min="0" max="4" style="width:80px" onchange="applySettings()">
+<span class="note">عدد الأرقام بعد الفاصلة</span>
+</div>
+</div>
+
+<div class="setting-group">
+<h3>🔒 الأمان والحماية</h3>
+<div class="setting-row">
+<label>🔐 تفعيل قفل الشاشة</label>
+<select id="enableLock" onchange="applySettings()" style="width:150px">
+<option value="off">إيقاف</option>
+<option value="on">تشغيل</option>
+</select>
+<span class="note">طلب كلمة مرور عند فتح التطبيق</span>
+</div>
+<div class="setting-row">
+<label>🔑 كلمة المرور</label>
+<input type="password" id="lockPasswordSetting" placeholder="أدخل كلمة المرور" style="width:200px" onchange="applySettings()">
+<span class="note">حد أدنى 4 أحرف</span>
+</div>
+<div class="setting-row">
+<label>⏱️ مهلة القفل التلقائي</label>
+<select id="lockTimeout" onchange="applySettings()" style="width:150px">
+<option value="0">إيقاف</option>
+<option value="5">5 دقائق</option>
+<option value="15">15 دقيقة</option>
+<option value="30">30 دقيقة</option>
+<option value="60">60 دقيقة</option>
+</select>
+<span class="note">قفل الشاشة تلقائياً بعد فترة عدم النشاط</span>
+</div>
+</div>
+
+<div class="setting-group">
+<h3>💾 النسخ الاحتياطي</h3>
+<div class="setting-row">
+<label>🔄 النسخ الاحتياطي التلقائي</label>
+<select id="autoBackup" onchange="applySettings()" style="width:150px">
+<option value="off">إيقاف</option>
+<option value="daily">يومي</option>
+<option value="weekly">أسبوعي</option>
+</select>
+<span class="note">حفظ نسخة احتياطية تلقائياً</span>
+</div>
+<div class="setting-row">
+<label>📦 عدد النسخ الاحتياطية</label>
+<input type="number" id="backupCount" value="5" min="1" max="20" style="width:80px" onchange="applySettings()">
+<span class="note">الحد الأقصى لعدد النسخ المحفوظة</span>
+</div>
+<div class="setting-row" style="gap:12px">
+<button class="btn-save" onclick="createBackup()">💾 إنشاء نسخة احتياطية</button>
+<button class="btn-light" onclick="restoreBackup()">📥 استعادة نسخة</button>
+<button class="danger" onclick="clearBackups()">🗑️ حذف كل النسخ</button>
+</div>
+<div id="backupList" style="margin-top:12px"></div>
+</div>
+
+<div class="setting-group">
+<h3>📱 التكامل مع الخدمات الخارجية</h3>
+<div class="setting-row">
+<label>رقم واتساب (للإرسال)</label>
+<input type="text" id="whatsappNumber" placeholder="مثال: 201234567890" style="width:200px" onchange="applySettings()">
+<span class="note">أدخل رقم الهاتف مع مفتاح الدولة</span>
+</div>
+</div>
+
+<div class="setting-group">
+<h3>📋 الإعدادات المتقدمة</h3>
+<div class="setting-row">
+<label>حفظ تلقائي للبيانات</label>
+<select id="autoSave" onchange="applySettings()" style="width:150px">
+<option value="on">مفعل</option>
+<option value="off" selected>غير مفعل</option>
+</select>
+<span class="note">حفظ البيانات تلقائياً في المتصفح</span>
+</div>
+</div>
+
+<div class="setting-group">
+<h3>🔄 إدارة البيانات</h3>
+<div class="setting-row" style="gap:12px">
+<button class="btn-light" onclick="exportData()">📤 تصدير البيانات</button>
+<button class="btn-light" onclick="document.getElementById('importFile').click()">📥 استيراد البيانات</button>
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+<button class="danger" onclick="resetAll()">🗑️ إعادة ضبط الكل</button>
+</div>
+</div>
+
+<div class="setting-group">
+<h3>📊 معلومات النظام</h3>
+<div class="setting-row"><label>عدد السجلات</label><span id="recordCount" style="font-weight:700">0</span></div>
+<div class="setting-row"><label>حجم البيانات</label><span id="dataSize" style="font-weight:700">0 KB</span></div>
+<div class="setting-row"><label>عدد النسخ الاحتياطية</label><span id="backupCountDisplay" style="font-weight:700">0</span></div>
+<div class="setting-row"><label>عدد الفواتير</label><span id="settingsInvoiceCount" style="font-weight:700">0</span></div>
+<div class="setting-row"><label>الإصدار</label><span style="font-weight:700">v3.7</span></div>
+</div>
+
+<div class="credits">
+    <strong>Credits</strong> made by <strong>Seif Ramy</strong> 🚀
+</div>
+
+<div class="actions">
+<button class="btn-save" onclick="applySettings();alert('✅ تم حفظ الإعدادات بنجاح')">💾 حفظ الإعدادات</button>
+<button class="btn-light" onclick="resetSettings()">🔄 استعادة الإعدادات الافتراضية</button>
+</div>
+</div>
+</section>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const pending={cash:[],insta:[],visa:[],withdrawals:[],riders:[],petty:[],credit:[],collections:[]};
+let invoices = JSON.parse(localStorage.getItem("invoices_data")||"[]");
+let chartsInitialized = false;
+let typeChartInstance = null;
+let trendChartInstance = null;
+let lockTimer = null;
+let lastActivity = Date.now();
+
+const $=id=>document.getElementById(id);
+function formatMoney(amount){
+ const decimals = parseInt($("decimalPlaces")?.value) || 2;
+ const symbol = $("currencySymbol")?.value || "ج";
+ return Number(amount||0).toLocaleString("ar-EG",{minimumFractionDigits:decimals,maximumFractionDigits:decimals}) + " " + symbol;
+}
+const val=id=>parseFloat($(id).value)||0;
+function meta(){return {user:$("user").value.trim()||"غير محدد",shift:$("shift").value.trim()||"غير محددة"}}
+
+// ===== INVOICE HELPERS =====
+function distributeToRiderInvoices(rider, amount) {
+    let remaining = amount;
+    let paidToOld = 0;
+    let openInvoices = invoices.filter(inv => inv.rider === rider && inv.remaining > 0);
+    openInvoices.sort((a,b) => new Date(a.datetime) - new Date(b.datetime));
+    for (let inv of openInvoices) {
+        if (remaining <= 0) break;
+        let deduct = Math.min(inv.remaining, remaining);
+        inv.remaining -= deduct;
+        inv.paid += deduct;
+        paidToOld += deduct;
+        remaining -= deduct;
+    }
+    return { paidToOld, remaining };
+}
+
+// ===== COLLECTION FROM RIDER =====
+function collectFromRider(){
+ const rider = $("collectRider").value.trim();
+ const amount = val("collectAmount");
+ if(!rider){alert("⚠️ اكتب اسم المندوب");return}
+ if(amount<=0){alert("⚠️ اكتب المبلغ");return}
+ 
+ const result = distributeToRiderInvoices(rider, amount);
+ let leftover = result.remaining;
+ let paidToOld = result.paid;
+ 
+ if (leftover > 0) {
+   const newInv = {
+     id: Date.now()+Math.random()*1000,
+     total: leftover,
+     paid: leftover,
+     remaining: 0,
+     rider: rider,
+     note: `دفعة مقدمة (تحصيل)`,
+     datetime: new Date().toLocaleString("ar-EG",{dateStyle:"short",timeStyle:"short"})
+   };
+   invoices.push(newInv);
+ }
+ 
+ saveInvoices();
+ renderInvoices();
+ 
+ const m=meta();
+ const item={
+   id:Date.now()+Math.random()*1000,
+   type:"تحصيل مناديب",
+   amount: amount,
+   note: `${rider} - تم توزيع ${formatMoney(paidToOld)} على فواتير قديمة${leftover>0?`، والباقي ${formatMoney(leftover)} كدفعة مقدمة`:''}`,
+   user:m.user,
+   shift:m.shift,
+   datetime:new Date().toLocaleString("ar-EG",{dateStyle:"short",timeStyle:"short"}),
+   isCollection:true,
+   rider: rider,
+   appliedToOld: paidToOld,
+   leftover: leftover
+ };
+ pending.collections.push(item);
+ 
+ $("collectRider").value="";
+ $("collectAmount").value="";
+ 
+ renderPending();
+ calc();
+ updateStats();
+ 
+ let msg = `✅ تم تحصيل ${formatMoney(amount)} من المندوب "${rider}".`;
+ if(paidToOld>0) msg += `\nتم توزيع ${formatMoney(paidToOld)} على فواتيره القديمة.`;
+ if(leftover>0) msg += `\nتم إضافة ${formatMoney(leftover)} كدفعة مقدمة (فاتورة جديدة).`;
+ alert(msg);
+}
+
+// ===== INVOICE FUNCTIONS =====
+function calcInvoiceRemaining(){
+ const total = val("invTotal");
+ const paid = val("invPaid");
+ const remaining = Math.max(0, total - paid);
+ $("invRemaining").value = formatMoney(remaining);
+}
+
+function addInvoice(){
+ const total = val("invTotal");
+ let paid = val("invPaid");
+ const rider = $("invRider").value.trim();
+ const note = $("invNote").value.trim();
+ if(total<=0){alert("⚠️ اكتب سعر الفاتورة");return}
+ if(!rider){alert("⚠️ اكتب اسم المندوب");return}
+ if(paid<0){alert("⚠️ المدفوع لا يمكن أن يكون سالباً");return}
+
+ let remainingToPay = paid;
+ let msg = '';
+
+ const result = distributeToRiderInvoices(rider, remainingToPay);
+ let paidToOld = result.paidToOld;
+ let leftover = result.remaining;
+
+ let newPaid = 0;
+ let newRemaining = total;
+ if (leftover > 0) {
+   newPaid = Math.min(leftover, total);
+   newRemaining = total - newPaid;
+   leftover -= newPaid;
+ }
+ if (leftover > 0) {
+   msg = `⚠️ تم دفع مبلغ ${formatMoney(leftover)} زيادة عن إجمالي الفاتورة والديون القديمة. سيتم حفظه كرصيد للمندوب.`;
+   const creditInv = {
+     id: Date.now()+Math.random()*1000,
+     total: leftover,
+     paid: leftover,
+     remaining: 0,
+     rider: rider,
+     note: `رصيد مدفوع مقدم (من تحصيل)`,
+     datetime: new Date().toLocaleString("ar-EG",{dateStyle:"short",timeStyle:"short"})
+   };
+   invoices.push(creditInv);
+ }
+
+ const newInvoice = {
+   id: Date.now()+Math.random()*1000,
+   total: total,
+   paid: newPaid,
+   remaining: newRemaining,
+   rider: rider,
+   note: note || (leftover>0 ? `رصيد إضافي: ${formatMoney(leftover)}` : ''),
+   datetime: new Date().toLocaleString("ar-EG",{dateStyle:"short",timeStyle:"short"})
+ };
+ invoices.push(newInvoice);
+
+ saveInvoices();
+ renderInvoices();
+ updateStats();
+
+ $("invTotal").value="";
+ $("invPaid").value="";
+ $("invRider").value="";
+ $("invNote").value="";
+ $("invRemaining").value="";
+
+ let summary = `✅ تم إضافة الفاتورة بنجاح.\n`;
+ if (paidToOld > 0) summary += `تم توزيع ${formatMoney(paidToOld)} على فواتير المندوب القديمة.\n`;
+ if (newPaid > 0) summary += `تم دفع ${formatMoney(newPaid)} من الفاتورة الجديدة.\n`;
+ if (newRemaining > 0) summary += `المتبقي على الفاتورة الجديدة: ${formatMoney(newRemaining)}.`;
+ alert(summary);
+}
+
+function renderInvoices(){
+ const container = document.getElementById('invoiceList');
+ if(invoices.length===0){
+   container.innerHTML = '<div style="color:#94a3b8;padding:20px;text-align:center">لا توجد فواتير</div>';
+   return;
+ }
+ let html = '';
+ invoices.forEach((inv, i) => {
+   html += `<div class="invoice-card">
+     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+       <div>
+         <span class="inv-total">💰 ${formatMoney(inv.total)}</span><br>
+         <span class="inv-rider">👤 ${esc(inv.rider)}</span>
+         ${inv.note ? `<br><span style="font-size:12px;color:#64748b">📝 ${esc(inv.note)}</span>` : ''}
+         <br><span style="font-size:11px;color:#64748b">📅 ${esc(inv.datetime)}</span>
+       </div>
+       <div style="text-align:left">
+         <div class="inv-paid">✅ مدفوع: ${formatMoney(inv.paid)}</div>
+         <div class="inv-remaining">⏳ متبقي: ${formatMoney(inv.remaining)}</div>
+       </div>
+       <div style="display:flex;gap:6px">
+         <button class="btn-light" style="padding:6px 12px;font-size:12px" onclick="payInvoice(${i})">💳 دفع</button>
+         <button class="danger" style="padding:6px 12px;font-size:12px" onclick="deleteInvoice(${i})">🗑️</button>
+       </div>
+     </div>
+   </div>`;
+ });
+ container.innerHTML = html;
+}
+
+function payInvoice(idx){
+ const inv = invoices[idx];
+ if(!inv) return;
+ const amount = prompt(`المبلغ المتبقي: ${formatMoney(inv.remaining)}\nأدخل المبلغ الذي تريد دفعه:`);
+ if(amount === null) return;
+ const paid = parseFloat(amount);
+ if(isNaN(paid) || paid<=0){alert("⚠️ أدخل مبلغ صحيح");return;}
+ if(paid > inv.remaining){alert("⚠️ المبلغ أكبر من المتبقي");return;}
+ inv.paid += paid;
+ inv.remaining -= paid;
+ saveInvoices();
+ renderInvoices();
+ updateStats();
+ alert("✅ تم تسجيل الدفعة");
+}
+
+function deleteInvoice(idx){
+ if(!confirm("🗑️ حذف الفاتورة؟")) return;
+ invoices.splice(idx,1);
+ saveInvoices();
+ renderInvoices();
+ updateStats();
+}
+
+function clearInvoices(){
+ if(!confirm("🗑️ حذف جميع الفواتير؟")) return;
+ invoices = [];
+ saveInvoices();
+ renderInvoices();
+ updateStats();
+}
+
+function saveInvoices(){
+ localStorage.setItem("invoices_data", JSON.stringify(invoices));
+}
+
+function shareInvoicesWhatsApp(){
+ if(invoices.length===0){alert("لا توجد فواتير للمشاركة");return;}
+ let msg = `🧾 *قائمة الفواتير - البشاير ماركت*\n━━━━━━━━━━━━━━━━━━━━\n`;
+ invoices.forEach(inv => {
+   msg += `💰 ${formatMoney(inv.total)} | 👤 ${inv.rider} | مدفوع: ${formatMoney(inv.paid)} | متبقي: ${formatMoney(inv.remaining)}\n`;
+ });
+ const num = getWhatsAppNumber();
+ const url = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+ window.open(url, '_blank');
+}
+
+// ===== RIDER EXPENSE FUNCTIONS =====
+function calcRiderTotal(){
+ const advance = val("rAdvance");
+ const drawer = val("rDrawer");
+ // ضامن لا يدخل في الإجمالي
+ $("rTotal").value = formatMoney(advance + drawer);
+}
+
+function addRider(){
+ const name=$("rName").value.trim();
+ const advance=val("rAdvance");
+ const drawer=val("rDrawer");
+ const guarantor=val("rGuarantor");
+ const total=advance+drawer;
+ if(!name){alert("⚠️ اكتب اسم المندوب");return}
+ if(total<=0 && guarantor<=0){alert("⚠️ اكتب مبلغ مصروف أو ضامن على الأقل");return}
+ const m=meta();
+ const item={
+   id:Date.now()+Math.random()*1000,
+   type:"مناديب",
+   amount:drawer,
+   advance:advance,
+   total:total,
+   guarantor:guarantor,
+   note:name + ` (عهدة: ${formatMoney(advance)} | درج: ${formatMoney(drawer)}${guarantor>0?` | ضامن: ${formatMoney(guarantor)}`:''})`,
+   user:m.user,
+   shift:m.shift,
+   datetime:new Date().toLocaleString("ar-EG",{dateStyle:"short",timeStyle:"short"}),
+   isRider:true,
+   advanceAmount:advance,
+   drawerAmount:drawer,
+   guarantorAmount:guarantor
+ };
+ pending.riders.push(item);
+ $("rName").value="";
+ $("rAdvance").value="";
+ $("rDrawer").value="";
+ $("rGuarantor").value="";
+ $("rTotal").value="";
+ renderPending();calc();
+}
+
+// ===== TRANSACTIONS =====
+function addTransaction(type,id){
+ let amount=val(id);if(amount<=0){alert("⚠️ اكتب مبلغ المعاملة أولًا.");return}
+ let key=id==="cashInput"?"cash":id==="instaInput"?"insta":"visa";
+ const m=meta();
+ const item={id:Date.now()+Math.random()*1000, type:type, amount:amount, note:'معاملة', user:m.user, shift:m.shift, datetime:new Date().toLocaleString("ar-EG",{dateStyle:"short",timeStyle:"short"})};
+ pending[key].push(item);
+ $(id).value="";renderPending();calc();
+}
+function addNamed(key,nameId,amountId){
+ let name=$(nameId).value.trim(),amount=val(amountId);
+ if(!name){alert("⚠️ اكتب الاسم أو البيان.");return}
+ if(amount<=0){alert("⚠️ اكتب المبلغ.");return}
+ const m=meta();
+ const typeMap={withdrawals:"مسحوبات",petty:"نثريات",credit:"آجل"};
+ const item={id:Date.now()+Math.random()*1000, type:typeMap[key], amount:amount, note:name, user:m.user, shift:m.shift, datetime:new Date().toLocaleString("ar-EG",{dateStyle:"short",timeStyle:"short"})};
+ pending[key].push(item);
+ $(nameId).value="";$(amountId).value="";renderPending();calc();
+}
+
+function renderPending(){
+ const categories = {
+   cash:{pending:pending.cash,container:'cashPending'},
+   insta:{pending:pending.insta,container:'instaPending'},
+   visa:{pending:pending.visa,container:'visaPending'},
+   withdrawals:{pending:pending.withdrawals,container:'withdrawalsPending'},
+   riders:{pending:pending.riders,container:'ridersPending'},
+   petty:{pending:pending.petty,container:'pettyPending'},
+   credit:{pending:pending.credit,container:'creditPending'},
+   collections:{pending:pending.collections,container:'collectionsPending'}
+ };
+ for(let cat in categories){
+   const c=categories[cat];const items=c.pending;const target=$(c.container);
+   if(items.length){let html=`<div class="pending-title">العناصر <span class="count">${items.length}</span></div>`;items.forEach((x,i)=>{html+=card(x,i,cat);});target.innerHTML=html;} 
+   else {target.innerHTML='<div style="color:#94a3b8;font-size:13px;padding:10px 0;font-weight:500">لا توجد عناصر</div>';}
+ }
+}
+
+function card(x,i,key){
+ let extra = "";
+ if(x.isRider && x.advanceAmount !== undefined){
+   extra = `<div class="meta">💰 عهدة: ${formatMoney(x.advanceAmount)} | درج: ${formatMoney(x.drawerAmount)}${x.guarantorAmount>0?` | 🛡️ ضامن: ${formatMoney(x.guarantorAmount)}`:''}</div>`;
+ }
+ if(x.isCollection){
+   extra = `<div class="meta">💰 تم توزيع ${formatMoney(x.appliedToOld)} على فواتير قديمة${x.leftover>0?`، والباقي ${formatMoney(x.leftover)} كدفعة مقدمة`:''}</div>`;
+ }
+ return `<div class="item-card">
+ <div><span class="type-badge">${x.type||''}</span> ${x.note?` — ${esc(x.note)}`:""}</div>
+ <div class="money">${formatMoney(x.amount)}</div>
+ ${extra}
+ <div class="meta"><span>📅 ${x.datetime||''}</span><span>👤 ${x.user||''}</span><span>📋 وردية: ${x.shift||''}</span></div>
+ <div class="actions">
+   <button class="edit-btn" onclick="editItem('${key}',${i})">✏️ تعديل</button>
+   <button class="delete-btn" onclick="removePending('${key}',${i})">🗑️ حذف</button>
+ </div>
+ </div>`;
+}
+
+function editItem(key, index){
+ const item = pending[key][index];
+ if(!item) return;
+ if(item.isRider){
+   const newAdvance = prompt("✏️ تعديل مبلغ العهدة:", item.advanceAmount);
+   if(newAdvance === null) return;
+   const newDrawer = prompt("✏️ تعديل مبلغ الدرج:", item.drawerAmount);
+   if(newDrawer === null) return;
+   const newGuarantor = prompt("✏️ تعديل مبلغ الضامن (غير محسوب):", item.guarantorAmount||0);
+   if(newGuarantor === null) return;
+   const a = parseFloat(newAdvance);
+   const d = parseFloat(newDrawer);
+   const g = parseFloat(newGuarantor);
+   if(isNaN(a) || a<0 || isNaN(d) || d<0 || isNaN(g) || g<0){alert("⚠️ يرجى إدخال مبالغ صحيحة."); return;}
+   item.advanceAmount = a;
+   item.drawerAmount = d;
+   item.guarantorAmount = g;
+   item.amount = d;
+   item.total = a+d;
+   item.note = `${item.note.split(' (')[0]} (عهدة: ${formatMoney(a)} | درج: ${formatMoney(d)}${g>0?` | ضامن: ${formatMoney(g)}`:''})`;
+   renderPending(); calc();
+   return;
+ }
+ if(item.isCollection){
+   const newAmount = prompt("✏️ تعديل مبلغ التحصيل:", item.amount);
+   if(newAmount === null) return;
+   const parsed = parseFloat(newAmount);
+   if(isNaN(parsed) || parsed < 0){alert("⚠️ يرجى إدخال مبلغ صحيح."); return;}
+   item.amount = parsed;
+   item.note = `${item.rider} - تحصيل ${formatMoney(parsed)}`;
+   renderPending(); calc();
+   return;
+ }
+ const newAmount = prompt("✏️ تعديل المبلغ:", item.amount);
+ if(newAmount === null) return;
+ const parsed = parseFloat(newAmount);
+ if(isNaN(parsed) || parsed < 0){alert("⚠️ يرجى إدخال مبلغ صحيح."); return;}
+ item.amount = parsed;
+ renderPending(); calc();
+}
+
+function removePending(key,i){if(pending[key] && pending[key][i]){pending[key].splice(i,1);renderPending();calc();}}
+
+// ===== SHIFT =====
+function saveAllToHistory(){
+ const m=meta();const log=getLog();let count=0;
+ for(let key in pending){if(pending[key] && pending[key].length>0){pending[key].forEach(x=>{
+   const entry={id:x.id||Date.now()+Math.random()*1000,type:x.type,amount:x.amount,note:x.note||'معاملة',user:m.user,shift:m.shift,datetime:x.datetime||new Date().toLocaleString("ar-EG",{dateStyle:"short",timeStyle:"short"})};
+   if(x.isRider){
+     entry.advanceAmount = x.advanceAmount;
+     entry.drawerAmount = x.drawerAmount;
+     entry.totalAmount = x.total;
+     entry.guarantorAmount = x.guarantorAmount;
+   }
+   if(x.isCollection){
+     entry.rider = x.rider;
+     entry.appliedToOld = x.appliedToOld;
+     entry.leftover = x.leftover;
+   }
+   log.unshift(entry);count++;
+ });}}
+ if(count===0)return false;saveLog(log);for(let key in pending){pending[key]=[];}renderPending();renderLog();calc();updateStats();return true;
+}
+function closeShift(){
+ let m=meta();if(m.user==="غير محدد"||m.shift==="غير محددة"){alert("⚠️ اكتب اسم المستخدم واسم/رقم الوردية أولًا.");return}
+ let c=calc();if(c.expected===0&&c.actual===0){alert("⚠️ اكتب الرصيد المتوقع والنقدية الحقيقية أولًا.");return;}
+ saveAllToHistory();let a=getLog();const entry={id:Date.now()+Math.random()*1000,type:"تقفيل",amount:c.expected,note:`رصيد الدرج ${formatMoney(c.drawer)} | المتوقع ${formatMoney(c.expected)} | المعاملات ${formatMoney(c.t)} | المناديب (درج) ${formatMoney(c.r)} | المناديب (عهدة) ${formatMoney(c.rAdvance)} | ضامن ${formatMoney(c.guarantor)} | تحصيل مناديب ${formatMoney(c.col)} | إجمالي المصروفات ${formatMoney(c.e)} | النتيجة: ${c.d>0?"زيادة "+formatMoney(c.d):c.d<0?"عجز "+formatMoney(Math.abs(c.d)):"متطابق"}`,user:m.user,shift:m.shift,datetime:new Date().toLocaleString("ar-EG",{dateStyle:"short",timeStyle:"short"})};
+ a.unshift(entry);saveLog(a);$("expected").value="";$("actual").value="";$("drawerBalance").value="";$("user").value="";$("shift").value="";initCloud();
+$("start").value=now();renderPending();renderLog();calc();updateStats();alert("✅ تم قفل وحفظ الوردية بنجاح!");showPage("log");
+}
+
+// ===== COPY REPORT =====
+function copyReport(){
+ const c=calc();
+ const report = `📋 تقرير التقفيل
+━━━━━━━━━━━━━━━━━━━━
+👤 المستخدم: ${$("user").value||"غير محدد"}
+📋 الوردية: ${$("shift").value||"غير محددة"}
+📅 التاريخ: ${new Date().toLocaleString("ar-EG",{dateStyle:"short",timeStyle:"short"})}
+━━━━━━━━━━━━━━━━━━━━
+💰 رصيد الدرج الافتتاحي: ${formatMoney(c.drawer)}
+💵 المعاملات: ${formatMoney(c.t)}
+💸 المسحوبات: ${formatMoney(c.w)}
+🧾 النثريات: ${formatMoney(c.p)}
+📒 الآجل: ${formatMoney(c.c)}
+🛵 المناديب (من الدرج): ${formatMoney(c.r)}
+🛵 المناديب (من العهدة): ${formatMoney(c.rAdvance)}
+🛡️ ضامن (غير محسوب): ${formatMoney(c.guarantor)}
+💰 تحصيل مناديب: ${formatMoney(c.col)}
+━━━━━━━━━━━━━━━━━━━━
+📊 إجمالي المصروفات: ${formatMoney(c.e)}
+📈 الرصيد المتوقع في الدرج: ${formatMoney(c.expected)}
+💵 النقدية الحقيقية: ${formatMoney(c.actual)}
+━━━━━━━━━━━━━━━━━━━━
+📌 النتيجة: ${c.d>0?"✅ زيادة "+formatMoney(c.d):c.d<0?"⚠️ عجز "+formatMoney(Math.abs(c.d)):"✅ متطابق"}`;
+ navigator.clipboard.writeText(report).then(()=>{
+   alert("✅ تم نسخ التقرير إلى الحافظة");
+ }).catch(()=>{
+   prompt("انسخ التقرير:", report);
+ });
+}
+
+// ===== WHATSAPP SHARING =====
+function getWhatsAppNumber(){
+ let num = $("whatsappNumber").value.trim();
+ if(!num) num = "201234567890";
+ num = num.replace(/\D/g, '');
+ if(!num.startsWith('20') && !num.startsWith('966') && !num.startsWith('971')){
+   if(num.startsWith('0')) num = '20' + num.substring(1);
+   else if(num.length === 10) num = '20' + num;
+ }
+ return num;
+}
+
+function shareWhatsApp(){
+ const c=calc();
+ const report = `📋 *تقرير التقفيل - البشاير ماركت*
+━━━━━━━━━━━━━━━━━━━━
+👤 المستخدم: ${$("user").value||"غير محدد"}
+📋 الوردية: ${$("shift").value||"غير محددة"}
+📅 التاريخ: ${new Date().toLocaleString("ar-EG",{dateStyle:"short",timeStyle:"short"})}
+━━━━━━━━━━━━━━━━━━━━
+💰 رصيد الدرج الافتتاحي: ${formatMoney(c.drawer)}
+💵 المعاملات: ${formatMoney(c.t)}
+💸 المسحوبات: ${formatMoney(c.w)}
+🧾 النثريات: ${formatMoney(c.p)}
+📒 الآجل: ${formatMoney(c.c)}
+🛵 المناديب (من الدرج): ${formatMoney(c.r)}
+🛵 المناديب (من العهدة): ${formatMoney(c.rAdvance)}
+🛡️ ضامن (غير محسوب): ${formatMoney(c.guarantor)}
+💰 تحصيل مناديب: ${formatMoney(c.col)}
+━━━━━━━━━━━━━━━━━━━━
+📊 إجمالي المصروفات: ${formatMoney(c.e)}
+📈 الرصيد المتوقع في الدرج: ${formatMoney(c.expected)}
+💵 النقدية الحقيقية: ${formatMoney(c.actual)}
+━━━━━━━━━━━━━━━━━━━━
+📌 النتيجة: ${c.d>0?"✅ زيادة "+formatMoney(c.d):c.d<0?"⚠️ عجز "+formatMoney(Math.abs(c.d)):"✅ متطابق"}`;
+ const num = getWhatsAppNumber();
+ const url = `https://wa.me/${num}?text=${encodeURIComponent(report)}`;
+ window.open(url, '_blank');
+}
+
+function shareLogWhatsApp(){
+ const log = getLog();
+ if(log.length===0){alert("لا توجد بيانات للمشاركة");return;}
+ let msg = `📚 *سجل المعاملات - البشاير ماركت*\n━━━━━━━━━━━━━━━━━━━━\n`;
+ log.slice(0,20).forEach(x=>{
+   msg += `📌 ${x.type}: ${formatMoney(x.amount)} - ${x.note||''} (${x.user||''})\n`;
+ });
+ if(log.length>20) msg += `\n... وعرض ${log.length-20} معاملة أخرى`;
+ const num = getWhatsAppNumber();
+ const url = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+ window.open(url, '_blank');
+}
+
+function shareStatsWhatsApp(){
+ const log = getFilteredLog();
+ if(log.length===0){alert("لا توجد بيانات للمشاركة");return;}
+ const totalAmt = log.reduce((s,x)=>s+x.amount,0);
+ const cash = log.filter(x=>x.type==='كاش').reduce((s,x)=>s+x.amount,0);
+ const insta = log.filter(x=>x.type==='إنستا باي').reduce((s,x)=>s+x.amount,0);
+ const visa = log.filter(x=>x.type==='فيزا').reduce((s,x)=>s+x.amount,0);
+ const wd = log.filter(x=>x.type==='مسحوبات').reduce((s,x)=>s+x.amount,0);
+ const riders = log.filter(x=>x.type==='مناديب').reduce((s,x)=>s+x.amount,0);
+ const collections = log.filter(x=>x.type==='تحصيل مناديب').reduce((s,x)=>s+x.amount,0);
+ const msg = `📊 *الإحصائيات - البشاير ماركت*\n━━━━━━━━━━━━━━━━━━━━\n📌 إجمالي المعاملات: ${log.length}\n💰 إجمالي المبالغ: ${formatMoney(totalAmt)}\n━━━━━━━━━━━━━━━━━━━━\n💵 كاش: ${formatMoney(cash)}\n🟣 إنستا باي: ${formatMoney(insta)}\n💳 فيزا: ${formatMoney(visa)}\n💸 مسحوبات: ${formatMoney(wd)}\n🛵 مناديب: ${formatMoney(riders)}\n💰 تحصيل مناديب: ${formatMoney(collections)}`;
+ const num = getWhatsAppNumber();
+ const url = `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+ window.open(url, '_blank');
+}
+
+// ===== LOG =====
+function getLog(){return JSON.parse(localStorage.getItem("market_log_v5")||"[]")}
+function saveLog(a){localStorage.setItem("market_log_v5",JSON.stringify(a));updateStats();}
+function renderLog(){
+ let q=($("search").value||"").toLowerCase(),f=$("filter").value,sf=$("shiftFilter").value,a=getLog();
+ let shifts=[...new Set(a.map(x=>x.shift))];$("shiftFilter").innerHTML='<option value="">كل الورديات</option>'+shifts.map(x=>`<option ${x===sf?"selected":""}>${esc(x)}</option>`).join("");
+ a=a.filter(x=>(!f||x.type===f)&&(!sf||x.shift===sf)&&(`${x.type} ${x.note} ${x.user} ${x.shift}`.toLowerCase().includes(q)));
+ $("logList").innerHTML=a.length?a.map(x=>{
+   let extra = "";
+   if(x.advanceAmount !== undefined){
+     extra = `<div class="meta" style="color:#64748b;font-size:12px">💰 عهدة: ${formatMoney(x.advanceAmount)} | درج: ${formatMoney(x.drawerAmount)}${x.guarantorAmount>0?` | 🛡️ ضامن: ${formatMoney(x.guarantorAmount)}`:''}</div>`;
+   }
+   if(x.rider && x.type==="تحصيل مناديب"){
+     extra = `<div class="meta" style="color:#64748b;font-size:12px">👤 ${esc(x.rider)} | تم توزيع ${formatMoney(x.appliedToOld||0)} على فواتير قديمة</div>`;
+   }
+   return `<div class="entry"><div class="head"><b style="font-size:16px;color:${typeColor(x.type)}">${esc(x.type)}</b><span class="badge">📋 وردية: ${esc(x.shift)}</span></div><div class="amount ${["مسحوبات","مناديب","نثريات","آجل"].includes(x.type)?"out":"in"}">${formatMoney(x.amount)}</div>${extra}<div class="meta" style="color:#64748b;font-size:13px;display:flex;gap:12px;flex-wrap:wrap;margin-top:4px"><span>📅 ${esc(x.datetime)}</span><span>👤 ${esc(x.user)}</span></div>${x.note?`<div class="meta" style="color:#475569;font-size:13px;margin-top:4px">📝 ${esc(x.note)}</div>`:""}</div>`;
+ }).join(""):'<div class="empty"><span class="big-icon">📭</span>لا توجد معاملات في السجل.</div>'
+}
+function typeColor(type){
+ const colors={كاش:'#059669','إنستا باي':'#7c3aed',فيزا:'#2563eb',مسحوبات:'#dc2626',مناديب:'#d97706',نثريات:'#8b5cf6',آجل:'#f59e0b','تحصيل مناديب':'#8b5cf6',تقفيل:'#0ea5e9'};
+ return colors[type]||'#64748b';
+}
+
+// ===== EXPORT =====
+function exportCSV(){
+ const log=getLog();
+ if(log.length===0){alert("لا توجد بيانات للتصدير");return;}
+ let csv="النوع,المبلغ,الملاحظة,المستخدم,الوردية,التاريخ\n";
+ log.forEach(x=>{
+   csv+=`${x.type},${x.amount},${x.note||''},${x.user||''},${x.shift||''},${x.datetime||''}\n`;
+ });
+ const blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");a.href=url;a.download=`تقرير_${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);
+}
+
+// ===== STATS =====
+function parseDateFromDatetime(datetime){
+ if(!datetime) return null;
+ let dateStr = datetime;
+ if(datetime.includes(',')) dateStr = datetime.split(',')[0].trim();
+ let parts = dateStr.split('/');
+ if(parts.length === 3){
+   const day = parts[0].padStart(2,'0');
+   const month = parts[1].padStart(2,'0');
+   const year = parts[2];
+   if(year.length === 4) return `${year}-${month}-${day}`;
+ }
+ parts = dateStr.split('-');
+ if(parts.length === 3 && parts[0].length === 4) return dateStr;
+ return null;
+}
+
+function getFilteredLog(){
+ const log=getLog();
+ const from=$("statsFrom").value;
+ const to=$("statsTo").value;
+ if(!from && !to) {
+   $("dateRangeInfo").textContent = "📊 عرض كل الفترة";
+   return log;
+ }
+ const filtered = log.filter(x=>{
+   const isoDate = parseDateFromDatetime(x.datetime);
+   if(!isoDate) return true;
+   if(from && isoDate<from) return false;
+   if(to && isoDate>to) return false;
+   return true;
+ });
+ let infoText = "📊 ";
+ if(from) infoText += `من ${from}`;
+ if(from && to) infoText += " ";
+ if(to) infoText += `إلى ${to}`;
+ if(!from && to) infoText = `📊 حتى ${to}`;
+ if(from && to && from===to) infoText = `📊 في ${from}`;
+ $("dateRangeInfo").textContent = infoText + ` (${filtered.length} معاملة)`;
+ return filtered;
+}
+
+function updateStats(){
+ const log=getFilteredLog();
+ const totalTx=log.length;
+ const totalAmt=log.reduce((s,x)=>s+x.amount,0);
+ const avgAmt=totalTx?totalAmt/totalTx:0;
+ const shifts=[...new Set(log.map(x=>x.shift))];
+ const shiftTotals={};
+ log.forEach(x=>{shiftTotals[x.shift]=(shiftTotals[x.shift]||0)+x.amount;});
+ const shiftVals=Object.values(shiftTotals);
+ const maxShift=shiftVals.length?Math.max(...shiftVals):0;
+ const minShift=shiftVals.length?Math.min(...shiftVals):0;
+ const closingEntries=log.filter(x=>x.type==='تقفيل');
+ const drawerTotal=closingEntries.reduce((s,x)=>{
+   const match=x.note?.match(/رصيد الدرج ([\d.]+)/);
+   return s+(match?parseFloat(match[1]):0);
+ },0);
+ 
+ $("totalTransactions").textContent=totalTx;
+ $("totalAmount").textContent=formatMoney(totalAmt);
+ $("avgAmount").textContent=formatMoney(avgAmt);
+ $("totalShifts").textContent=shifts.length;
+ $("maxShift").textContent=formatMoney(maxShift);
+ $("minShift").textContent=formatMoney(minShift);
+ $("totalDrawer").textContent=formatMoney(drawerTotal);
+
+ const cash=log.filter(x=>x.type==='كاش').reduce((s,x)=>s+x.amount,0);
+ const insta=log.filter(x=>x.type==='إنستا باي').reduce((s,x)=>s+x.amount,0);
+ const visa=log.filter(x=>x.type==='فيزا').reduce((s,x)=>s+x.amount,0);
+ const wd=log.filter(x=>x.type==='مسحوبات').reduce((s,x)=>s+x.amount,0);
+ const riders=log.filter(x=>x.type==='مناديب').reduce((s,x)=>s+x.amount,0);
+ const ridersAdvance=log.filter(x=>x.type==='مناديب').reduce((s,x)=>s+(x.advanceAmount||0),0);
+ const guarantorTotal=log.filter(x=>x.type==='مناديب').reduce((s,x)=>s+(x.guarantorAmount||0),0);
+ const collections=log.filter(x=>x.type==='تحصيل مناديب').reduce((s,x)=>s+x.amount,0);
+ const petty=log.filter(x=>x.type==='نثريات').reduce((s,x)=>s+x.amount,0);
+ const credit=log.filter(x=>x.type==='آجل').reduce((s,x)=>s+x.amount,0);
+ const closing=log.filter(x=>x.type==='تقفيل').reduce((s,x)=>s+x.amount,0);
+
+ $("statCash").textContent=formatMoney(cash);
+ $("statInsta").textContent=formatMoney(insta);
+ $("statVisa").textContent=formatMoney(visa);
+ $("statWithdrawals").textContent=formatMoney(wd);
+ $("statRiders").textContent=formatMoney(riders);
+ $("statRidersAdvance").textContent=formatMoney(ridersAdvance);
+ $("statGuarantor").textContent=formatMoney(guarantorTotal);
+ $("statCollections").textContent=formatMoney(collections);
+ $("statPetty").textContent=formatMoney(petty);
+ $("statCredit").textContent=formatMoney(credit);
+ $("statClosing").textContent=formatMoney(closing);
+
+ // Invoice stats
+ const totalInvoices = invoices.length;
+ const totalInvoiceAmount = invoices.reduce((s,i)=>s+i.total,0);
+ const totalPaid = invoices.reduce((s,i)=>s+i.paid,0);
+ const totalRemaining = invoices.reduce((s,i)=>s+i.remaining,0);
+ $("invoiceCount").textContent=totalInvoices;
+ $("invoiceTotal").textContent=formatMoney(totalInvoiceAmount);
+ $("invoicePaid").textContent=formatMoney(totalPaid);
+ $("invoiceRemaining").textContent=formatMoney(totalRemaining);
+
+ // Type breakdown for log
+ const types={};
+ log.forEach(x=>{
+   types[x.type]=(types[x.type]||0)+x.amount;
+ });
+ let html='';
+ const colors={كاش:'#059669','إنستا باي':'#7c3aed',فيزا:'#2563eb',مسحوبات:'#dc2626',مناديب:'#d97706',نثريات:'#8b5cf6',آجل:'#f59e0b','تحصيل مناديب':'#8b5cf6',تقفيل:'#0ea5e9'};
+ for(let t in types){
+   const pct=totalAmt?Math.round(types[t]/totalAmt*100):0;
+   html+=`<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px;text-align:center">
+     <div style="font-size:14px;font-weight:600;color:${colors[t]||'#64748b'}">${t}</div>
+     <div style="font-size:20px;font-weight:800">${formatMoney(types[t])}</div>
+     <div style="font-size:11px;color:#64748b">${pct}%</div>
+   </div>`;
+ }
+ $("typeBreakdown").innerHTML=html||'<div style="color:#94a3b8;text-align:center;padding:20px">لا توجد بيانات</div>';
+
+ document.getElementById('settingsInvoiceCount').textContent = invoices.length;
+ updateCharts(log);
+}
+
+// ===== CHARTS =====
+function updateCharts(log){
+ if(!chartsInitialized){
+   initCharts();
+   chartsInitialized=true;
+ }
+ const types={};
+ log.forEach(x=>{types[x.type]=(types[x.type]||0)+x.amount;});
+ const labels=Object.keys(types);
+ const values=Object.values(types);
+ if(typeChartInstance){
+   typeChartInstance.data.labels=labels.length?labels:['لا توجد بيانات'];
+   typeChartInstance.data.datasets[0].data=labels.length?values:[0];
+   typeChartInstance.update();
+ }
+ const daily={};
+ log.forEach(x=>{
+   const date=parseDateFromDatetime(x.datetime);
+   if(date){daily[date]=(daily[date]||0)+x.amount;}
+ });
+ const dates=Object.keys(daily).sort();
+ const dailyValues=dates.map(d=>daily[d]);
+ if(trendChartInstance){
+   trendChartInstance.data.labels=dates.length?dates:['لا توجد بيانات'];
+   trendChartInstance.data.datasets[0].data=dates.length?dailyValues:[0];
+   trendChartInstance.update();
+ }
+}
+
+function initCharts(){
+ const ctx1=document.getElementById('typeChart').getContext('2d');
+ const isDark=document.body.classList.contains('dark-mode');
+ const textColor=isDark?'#e2e8f0':'#172033';
+ typeChartInstance = new Chart(ctx1, {
+   type:'doughnut',
+   data:{labels:['لا توجد بيانات'], datasets:[{data:[0], backgroundColor:['#94a3b8']}]},
+   options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:textColor}}}}
+ });
+ const ctx2=document.getElementById('trendChart').getContext('2d');
+ trendChartInstance = new Chart(ctx2, {
+   type:'line',
+   data:{labels:['لا توجد بيانات'], datasets:[{data:[0], borderColor:'#6366f1', backgroundColor:'rgba(99,102,241,0.1)', fill:true}]},
+   options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:textColor}}}, scales:{y:{beginAtZero:true, ticks:{color:textColor}}, x:{ticks:{color:textColor}}}}
+ });
+}
+
+// ===== DATE FILTER HELPERS =====
+function setToday(){
+ const today=new Date().toISOString().slice(0,10);
+ $("statsFrom").value=today;
+ $("statsTo").value=today;
+ updateStats();
+}
+function setWeek(){
+ const now=new Date();
+ const start=new Date(now);
+ start.setDate(now.getDate()-now.getDay());
+ const end=new Date(now);
+ end.setDate(now.getDate()-now.getDay()+6);
+ $("statsFrom").value=start.toISOString().slice(0,10);
+ $("statsTo").value=end.toISOString().slice(0,10);
+ updateStats();
+}
+function setMonth(){
+ const now=new Date();
+ const start=new Date(now.getFullYear(),now.getMonth(),1);
+ const end=new Date(now.getFullYear(),now.getMonth()+1,0);
+ $("statsFrom").value=start.toISOString().slice(0,10);
+ $("statsTo").value=end.toISOString().slice(0,10);
+ updateStats();
+}
+function clearDateFilter(){
+ $("statsFrom").value="";
+ $("statsTo").value="";
+ updateStats();
+}
+
+// ===== SECURITY =====
+function checkLock(){
+ const enabled = localStorage.getItem("lock_enabled") === "on";
+ const password = localStorage.getItem("lock_password");
+ if(enabled && password && password.length>=4){
+   document.getElementById('lockOverlay').style.display = 'flex';
+   document.body.classList.add('locked');
+   document.getElementById('lockPassword').value = '';
+   document.getElementById('lockError').style.display = 'none';
+   document.getElementById('lockPassword').focus();
+ } else {
+   document.getElementById('lockOverlay').style.display = 'none';
+   document.body.classList.remove('locked');
+ }
+}
+
+function unlockApp(){
+ const password = document.getElementById('lockPassword').value;
+ const stored = localStorage.getItem("lock_password");
+ if(password === stored){
+   document.getElementById('lockOverlay').style.display = 'none';
+   document.body.classList.remove('locked');
+   document.getElementById('lockError').style.display = 'none';
+   lastActivity = Date.now();
+   resetLockTimer();
+ } else {
+   document.getElementById('lockError').style.display = 'block';
+   document.getElementById('lockPassword').value = '';
+   document.getElementById('lockPassword').focus();
+ }
+}
+
+function lockApp(){
+ const enabled = localStorage.getItem("lock_enabled") === "on";
+ if(enabled && !document.body.classList.contains('locked')){
+   document.getElementById('lockOverlay').style.display = 'flex';
+   document.body.classList.add('locked');
+   document.getElementById('lockPassword').value = '';
+   document.getElementById('lockError').style.display = 'none';
+   document.getElementById('lockPassword').focus();
+ }
+}
+
+function resetLockTimer(){
+ if(lockTimer) clearTimeout(lockTimer);
+ const timeout = parseInt(localStorage.getItem("lock_timeout")||"0");
+ if(timeout > 0){
+   lockTimer = setTimeout(() => {
+     const inactive = (Date.now() - lastActivity) / 60000;
+     if(inactive >= timeout){
+       lockApp();
+     }
+   }, timeout * 60000);
+ }
+}
+
+document.addEventListener('click', () => { lastActivity = Date.now(); resetLockTimer(); });
+document.addEventListener('keydown', () => { lastActivity = Date.now(); resetLockTimer(); });
+document.addEventListener('scroll', () => { lastActivity = Date.now(); resetLockTimer(); });
+
+// ===== BACKUP SYSTEM =====
+function getBackups(){
+ return JSON.parse(localStorage.getItem("backups_list")||"[]");
+}
+
+function saveBackupsList(list){
+ localStorage.setItem("backups_list", JSON.stringify(list));
+}
+
+function createBackup(){
+ const data = {
+   log: getLog(),
+   invoices: invoices,
+   settings: localStorage.getItem("app_settings"),
+   version: "3.7",
+   created: new Date().toISOString(),
+   id: Date.now()
+ };
+ const backups = getBackups();
+ backups.unshift(data);
+ const maxCount = parseInt($("backupCount")?.value) || 5;
+ while(backups.length > maxCount){
+   backups.pop();
+ }
+ saveBackupsList(backups);
+ localStorage.setItem("backup_"+data.id, JSON.stringify(data));
+ renderBackupList();
+ alert("✅ تم إنشاء نسخة احتياطية بنجاح!");
+}
+
+function restoreBackup(){
+ const backups = getBackups();
+ if(backups.length === 0){
+   alert("⚠️ لا توجد نسخ احتياطية");
+   return;
+ }
+ let msg = "📦 اختر النسخة الاحتياطية للاستعادة:\n\n";
+ backups.forEach((b, i) => {
+   const date = new Date(b.created).toLocaleString("ar-EG");
+   msg += `${i+1}. ${date} - ${b.log?.length||0} سجل\n`;
+ });
+ const choice = prompt(msg + "\nأدخل رقم النسخة (1-" + backups.length + "):");
+ if(!choice) return;
+ const idx = parseInt(choice)-1;
+ if(isNaN(idx) || idx<0 || idx>=backups.length){
+   alert("⚠️ اختيار غير صحيح");
+   return;
+ }
+ const backup = backups[idx];
+ if(backup.log && confirm("⚠️ سيتم استبدال البيانات الحالية. هل أنت متأكد؟")){
+   saveLog(backup.log);
+   if(backup.invoices){
+     invoices = backup.invoices;
+     saveInvoices();
+     renderInvoices();
+   }
+   if(backup.settings){
+     localStorage.setItem("app_settings", backup.settings);
+   }
+   loadSettings();
+   renderLog();
+   renderPending();
+   calc();
+   updateStats();
+   alert("✅ تم استعادة النسخة الاحتياطية بنجاح!");
+ }
+}
+
+function clearBackups(){
+ if(!confirm("🗑️ حذف جميع النسخ الاحتياطية؟")) return;
+ const backups = getBackups();
+ backups.forEach(b => {
+   localStorage.removeItem("backup_"+b.id);
+ });
+ saveBackupsList([]);
+ renderBackupList();
+ alert("✅ تم حذف جميع النسخ الاحتياطية");
+}
+
+function renderBackupList(){
+ const backups = getBackups();
+ const container = document.getElementById('backupList');
+ if(backups.length === 0){
+   container.innerHTML = '<div style="color:#94a3b8;padding:10px;text-align:center">لا توجد نسخ احتياطية</div>';
+   return;
+ }
+ let html = '';
+ backups.forEach((b, i) => {
+   const date = new Date(b.created).toLocaleString("ar-EG");
+   html += `<div class="backup-item">
+     <div class="backup-info">
+       <strong>نسخة ${i+1}</strong><br>
+       <small>📅 ${date} • ${b.log?.length||0} سجل • ${b.invoices?.length||0} فاتورة</small>
+     </div>
+     <div style="display:flex;gap:6px">
+       <button class="btn-light" style="padding:6px 12px;font-size:12px" onclick="restoreSpecificBackup(${i})">📥 استعادة</button>
+       <button class="danger" style="padding:6px 12px;font-size:12px" onclick="deleteBackup(${i})">🗑️</button>
+     </div>
+   </div>`;
+ });
+ container.innerHTML = html;
+ document.getElementById('backupCountDisplay').textContent = backups.length;
+}
+
+function restoreSpecificBackup(idx){
+ const backups = getBackups();
+ if(idx<0 || idx>=backups.length) return;
+ const backup = backups[idx];
+ if(backup.log && confirm("⚠️ سيتم استبدال البيانات الحالية. هل أنت متأكد؟")){
+   saveLog(backup.log);
+   if(backup.invoices){
+     invoices = backup.invoices;
+     saveInvoices();
+     renderInvoices();
+   }
+   if(backup.settings){
+     localStorage.setItem("app_settings", backup.settings);
+   }
+   loadSettings();
+   renderLog();
+   renderPending();
+   calc();
+   updateStats();
+   alert("✅ تم استعادة النسخة الاحتياطية بنجاح!");
+ }
+}
+
+function deleteBackup(idx){
+ if(!confirm("🗑️ حذف هذه النسخة؟")) return;
+ const backups = getBackups();
+ const removed = backups.splice(idx, 1)[0];
+ saveBackupsList(backups);
+ if(removed) localStorage.removeItem("backup_"+removed.id);
+ renderBackupList();
+}
+
+function autoBackupCheck(){
+ const setting = localStorage.getItem("auto_backup");
+ if(setting === "daily"){
+   const lastBackup = localStorage.getItem("last_backup_date");
+   const today = new Date().toISOString().slice(0,10);
+   if(lastBackup !== today){
+     createBackup();
+     localStorage.setItem("last_backup_date", today);
+   }
+ } else if(setting === "weekly"){
+   const lastBackup = localStorage.getItem("last_backup_date");
+   const today = new Date();
+   const weekNum = Math.floor(today.getTime() / (7*24*60*60*1000));
+   if(!lastBackup || parseInt(lastBackup) !== weekNum){
+     createBackup();
+     localStorage.setItem("last_backup_date", String(weekNum));
+   }
+ }
+}
+
+// ===== SETTINGS =====
+function toggleDarkMode(){
+ const mode=$("darkMode").value;
+ if(mode==='on'){document.body.classList.add('dark-mode');localStorage.setItem("dark_mode","on");}
+ else{document.body.classList.remove('dark-mode');localStorage.setItem("dark_mode","off");}
+ setTimeout(updateStats, 100);
+}
+function applySettings(){
+ document.body.style.backgroundColor = $("bgColor").value;
+ document.querySelectorAll(".card").forEach(c=>c.style.backgroundColor = $("cardColor").value);
+ document.body.style.color = $("textColor").value;
+ const settings={
+   bgColor:$("bgColor").value,
+   cardColor:$("cardColor").value,
+   textColor:$("textColor").value,
+   currencySymbol:$("currencySymbol").value,
+   decimalPlaces:$("decimalPlaces").value,
+   autoSave:$("autoSave").value,
+   whatsappNumber:$("whatsappNumber").value,
+   enableLock:$("enableLock").value,
+   lockPassword:$("lockPasswordSetting").value,
+   lockTimeout:$("lockTimeout").value,
+   autoBackup:$("autoBackup").value,
+   backupCount:$("backupCount").value
+ };
+ localStorage.setItem("app_settings",JSON.stringify(settings));
+ if(settings.enableLock === "on" && settings.lockPassword && settings.lockPassword.length>=4){
+   localStorage.setItem("lock_enabled", "on");
+   localStorage.setItem("lock_password", settings.lockPassword);
+   localStorage.setItem("lock_timeout", settings.lockTimeout);
+ } else if(settings.enableLock === "off"){
+   localStorage.setItem("lock_enabled", "off");
+   document.getElementById('lockOverlay').style.display = 'none';
+   document.body.classList.remove('locked');
+ }
+ if(settings.autoBackup !== "off"){
+   localStorage.setItem("auto_backup", settings.autoBackup);
+ } else {
+   localStorage.removeItem("auto_backup");
+ }
+ renderPending();renderLog();calc();updateStats();renderBackupList();
+}
+function loadSettings(){
+ const saved=localStorage.getItem("app_settings");
+ if(saved){try{const settings=JSON.parse(saved);if(settings.bgColor)$("bgColor").value=settings.bgColor;if(settings.cardColor)$("cardColor").value=settings.cardColor;if(settings.textColor)$("textColor").value=settings.textColor;if(settings.currencySymbol)$("currencySymbol").value=settings.currencySymbol;if(settings.decimalPlaces)$("decimalPlaces").value=settings.decimalPlaces;if(settings.autoSave)$("autoSave").value=settings.autoSave;if(settings.whatsappNumber)$("whatsappNumber").value=settings.whatsappNumber;if(settings.enableLock)$("enableLock").value=settings.enableLock;if(settings.lockPassword)$("lockPasswordSetting").value=settings.lockPassword;if(settings.lockTimeout)$("lockTimeout").value=settings.lockTimeout;if(settings.autoBackup)$("autoBackup").value=settings.autoBackup;if(settings.backupCount)$("backupCount").value=settings.backupCount;applySettings();}catch(e){}}
+ const darkMode=localStorage.getItem("dark_mode");
+ if(darkMode==='on'){$("darkMode").value="on";document.body.classList.add('dark-mode');}
+ checkLock();
+ setTimeout(autoBackupCheck, 5000);
+}
+function updateSettingsUI(){
+ const log=getLog();
+ $("recordCount").textContent=log.length;
+ const size=new Blob([JSON.stringify(log)]).size;
+ $("dataSize").textContent=(size/1024).toFixed(2)+" KB";
+ renderBackupList();
+ document.getElementById('settingsInvoiceCount').textContent = invoices.length;
+}
+function resetSettings(){
+ if(!confirm("🔄 استعادة الإعدادات الافتراضية؟"))return;
+ $("bgColor").value="#f0f2f8";
+ $("cardColor").value="#ffffff";
+ $("textColor").value="#172033";
+ $("currencySymbol").value="ج";
+ $("decimalPlaces").value="2";
+ $("autoSave").value="off";
+ $("darkMode").value="off";
+ $("whatsappNumber").value="";
+ $("enableLock").value="off";
+ $("lockPasswordSetting").value="";
+ $("lockTimeout").value="0";
+ $("autoBackup").value="off";
+ $("backupCount").value="5";
+ document.body.classList.remove('dark-mode');
+ localStorage.setItem("dark_mode","off");
+ localStorage.setItem("lock_enabled","off");
+ localStorage.removeItem("lock_password");
+ document.getElementById('lockOverlay').style.display = 'none';
+ document.body.classList.remove('locked');
+ applySettings();
+ alert("✅ تم استعادة الإعدادات الافتراضية");
+}
+function exportData(){const data={log:getLog(),invoices:invoices,settings:localStorage.getItem("app_settings"),backups:getBackups(),version:"3.7",exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`supermarket_data_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(url);alert("✅ تم تصدير البيانات بنجاح");}
+function importData(event){const file=event.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=function(e){try{const data=JSON.parse(e.target.result);if(data.log){saveLog(data.log);}if(data.invoices){invoices=data.invoices;saveInvoices();renderInvoices();}if(data.settings)localStorage.setItem("app_settings",data.settings);if(data.backups)saveBackupsList(data.backups);loadSettings();renderLog();renderPending();calc();updateStats();renderBackupList();alert("✅ تم استيراد البيانات بنجاح");}catch(err){alert("⚠️ حدث خطأ في قراءة الملف");}};reader.readAsText(file);event.target.value="";}
+function resetAll(){if(!confirm("⚠️ هل أنت متأكد من حذف جميع البيانات والإعدادات؟"))return;if(!confirm("⚠️ تأكيد نهائي: سيتم حذف كل شيء!"))return;localStorage.clear();invoices=[];saveInvoices();loadSettings();renderLog();renderPending();calc();updateStats();renderInvoices();renderBackupList();alert("✅ تم إعادة ضبط النظام بالكامل");}
+
+// ===== HELPERS =====
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function showPage(p){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));$(p).classList.add("active");document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));if(p==="home")$("homeNav").classList.add("active");else if(p==="log")$("logNav").classList.add("active");else if(p==="stats")$("statsNav").classList.add("active");else if(p==="invoices")$("invoicesNav").classList.add("active");else if(p==="settings")$("settingsNav").classList.add("active");if(p==="log")renderLog();if(p==="stats"){setTimeout(updateStats,50);}if(p==="invoices")renderInvoices();if(p==="settings")updateSettingsUI();scrollTo(0,0);}
+function clearCurrent(){if(!confirm("🔄 بدء وردية جديدة ومسح البيانات الحالية؟"))return;Object.keys(pending).forEach(k=>pending[k]=[]);["user","shift","cashInput","instaInput","visaInput","expected","actual","drawerBalance","wName","wAmount","rName","rAdvance","rDrawer","rGuarantor","pName","pAmount","cName","cAmount","collectRider","collectAmount"].forEach(id=>$(id).value="");$("rTotal").value="";$("start").value=now();renderPending();calc();}
+function wipe(){if(confirm("🗑️ حذف السجل بالكامل؟")){localStorage.removeItem("market_log_v5");renderLog();updateStats();}}
+function now(){let d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
+function calc(){
+ const drawer = val("drawerBalance");
+ const t = pending.cash.reduce((s,x)=>s+x.amount,0)+pending.insta.reduce((s,x)=>s+x.amount,0)+pending.visa.reduce((s,x)=>s+x.amount,0)+pending.collections.reduce((s,x)=>s+x.amount,0);
+ const w = pending.withdrawals.reduce((s,x)=>s+x.amount,0);
+ const p = pending.petty.reduce((s,x)=>s+x.amount,0);
+ const c = pending.credit.reduce((s,x)=>s+x.amount,0);
+ const r = pending.riders.reduce((s,x)=>s+(x.drawerAmount||x.amount||0),0);
+ const rAdvance = pending.riders.reduce((s,x)=>s+(x.advanceAmount||0),0);
+ const guarantor = pending.riders.reduce((s,x)=>s+(x.guarantorAmount||0),0);
+ const col = pending.collections.reduce((s,x)=>s+x.amount,0);
+ let e=w+p+c+r, expected=val("expected"), actual=val("actual");
+ $("tdrawer").textContent=formatMoney(drawer);
+ $("tt").textContent=formatMoney(t);
+ $("tw").textContent=formatMoney(w);
+ $("tp").textContent=formatMoney(p);
+ $("tc").textContent=formatMoney(c);
+ $("tr").textContent=formatMoney(r);
+ $("trAdvance").textContent=formatMoney(rAdvance);
+ $("tguarantor").textContent=formatMoney(guarantor);
+ $("tcol").textContent=formatMoney(col);
+ $("te").textContent=formatMoney(e);
+ $("ev").textContent=formatMoney(expected);
+ $("av").textContent=formatMoney(actual);
+ let d=drawer+t+actual-expected-e;
+ $("difference").textContent=formatMoney(Math.abs(d));
+ let box=$("result");box.className="result";
+ if(!t&&!expected&&!actual&&!drawer)$("diffText").textContent="📊 أدخل البيانات لمشاهدة النتيجة.";
+ else if(d>0){box.classList.add("ok");$("diffText").textContent="✅ يوجد زيادة في التقفيل"}
+ else if(d<0){box.classList.add("bad");$("diffText").textContent="⚠️ يوجد عجز في التقفيل"}
+ else{box.classList.add("ok");$("diffText").textContent="✅ التقفيل متطابق"}
+ return {drawer,t,w,p,c,r,rAdvance,guarantor,col,e,expected,actual,d}
+}
+
+
+// ===== V6 CLOUD / MULTI-USER =====
+let cloudApp=null, cloudAuth=null, cloudDb=null, cloudUnsub=null;
+const CLOUD_STORE_ID='albashaer-market-main-v6';
+function getFirebaseConfig(){try{return JSON.parse(localStorage.getItem('firebase_config_v6')||'null')}catch(e){return null}}
+function setCloudStatus(msg){const el=$('cloudStatus');if(el)el.textContent=msg}
+function showCloudSetup(){ $('cloudLogin').classList.add('cloud-hide'); $('cloudSetup').classList.remove('cloud-hide'); const c=getFirebaseConfig(); if(c){$('fbApiKey').value=c.apiKey||'';$('fbAuthDomain').value=c.authDomain||'';$('fbProjectId').value=c.projectId||'';$('fbStorageBucket').value=c.storageBucket||'';$('fbMessagingSenderId').value=c.messagingSenderId||'';$('fbAppId').value=c.appId||'';} }
+function showCloudLogin(){ $('cloudSetup').classList.add('cloud-hide'); $('cloudLogin').classList.remove('cloud-hide'); }
+function saveFirebaseConfig(){
+ const c={apiKey:$('fbApiKey').value.trim(),authDomain:$('fbAuthDomain').value.trim(),projectId:$('fbProjectId').value.trim(),storageBucket:$('fbStorageBucket').value.trim(),messagingSenderId:$('fbMessagingSenderId').value.trim(),appId:$('fbAppId').value.trim()};
+ if(!c.apiKey||!c.authDomain||!c.projectId||!c.appId){alert('⚠️ أكمل apiKey و authDomain و projectId و appId');return}
+ localStorage.setItem('firebase_config_v6',JSON.stringify(c)); location.reload();
+}
+function initCloud(){
+ const c=getFirebaseConfig();
+ if(!c){showCloudSetup();return false}
+ try{
+  if(!firebase.apps.length) firebase.initializeApp(c);
+  cloudApp=firebase.app(); cloudAuth=firebase.auth(); cloudDb=firebase.firestore();
+  cloudAuth.onAuthStateChanged(user=>{if(user){onCloudUser(user)}else{ $('cloudGate').style.display='flex'; $('cloudUser').classList.add('cloud-hide'); showCloudLogin(); }});
+  return true;
+ }catch(e){console.error(e);setCloudStatus('❌ بيانات Firebase غير صحيحة: '+e.message);showCloudLogin();return false}
+}
+async function cloudLogin(){
+ if(!cloudAuth){if(!initCloud())return}
+ const email=$('cloudEmail').value.trim(), password=$('cloudPassword').value;
+ if(!email||!password){setCloudStatus('⚠️ اكتب البريد وكلمة المرور');return}
+ setCloudStatus('⏳ جاري تسجيل الدخول...');
+ try{await cloudAuth.signInWithEmailAndPassword(email,password)}catch(e){setCloudStatus('❌ '+friendlyFirebaseError(e))}
+}
+async function cloudSignup(){
+ if(!cloudAuth){if(!initCloud())return}
+ const email=$('cloudEmail').value.trim(), password=$('cloudPassword').value;
+ if(!email||password.length<6){setCloudStatus('⚠️ اكتب بريدًا صحيحًا وكلمة مرور 6 أحرف على الأقل');return}
+ setCloudStatus('⏳ جاري إنشاء الحساب...');
+ try{await cloudAuth.createUserWithEmailAndPassword(email,password)}catch(e){setCloudStatus('❌ '+friendlyFirebaseError(e))}
+}
+function friendlyFirebaseError(e){const m=e&&e.code||'';const map={'auth/invalid-credential':'بيانات الدخول غير صحيحة','auth/email-already-in-use':'البريد مستخدم بالفعل','auth/invalid-email':'البريد الإلكتروني غير صحيح','auth/weak-password':'كلمة المرور ضعيفة','auth/network-request-failed':'مشكلة في الإنترنت','auth/operation-not-allowed':'فعّل Email/Password من Firebase Authentication'};return map[m]||e.message||'حدث خطأ'}
+async function onCloudUser(user){
+ $('cloudGate').style.display='none';$('cloudUser').classList.remove('cloud-hide');$('cloudUser').textContent='☁️ '+(user.email||'مستخدم');
+ $('user').value=(user.email||'').split('@')[0];
+ await loadCloudData();
+ if(cloudUnsub)cloudUnsub();
+ cloudUnsub=cloudDb.collection('markets').doc(CLOUD_STORE_ID).onSnapshot(snap=>{
+  if(!snap.exists)return; const d=snap.data()||{};
+  if(d.updatedBy===user.uid && d.updatedAt && (Date.now()-d.updatedAt.toMillis()<3000))return;
+  if(Array.isArray(d.log)){localStorage.setItem('market_log_v5',JSON.stringify(d.log));renderLog();updateStats()}
+  if(Array.isArray(d.invoices)){invoices=d.invoices;localStorage.setItem('invoices_data',JSON.stringify(invoices));renderInvoices()}
+ });
+}
+async function loadCloudData(){
+ try{const snap=await cloudDb.collection('markets').doc(CLOUD_STORE_ID).get(); if(snap.exists){const d=snap.data()||{}; if(Array.isArray(d.log)){localStorage.setItem('market_log_v5',JSON.stringify(d.log));} if(Array.isArray(d.invoices)){invoices=d.invoices;localStorage.setItem('invoices_data',JSON.stringify(invoices));} renderLog();renderInvoices();updateStats();setCloudStatus('☁️ متصل ومزامن');}}catch(e){console.error(e);alert('⚠️ تعذر تحميل البيانات السحابية: '+e.message)}
+}
+async function pushCloud(){
+ if(!cloudDb||!cloudAuth||!cloudAuth.currentUser)return;
+ try{await cloudDb.collection('markets').doc(CLOUD_STORE_ID).set({log:getLog(),invoices:invoices,updatedBy:cloudAuth.currentUser.uid,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(e){console.error('Cloud sync failed',e)}
+}
+// Override local-only saves with cloud-aware versions. LocalStorage remains a fast offline cache.
+function saveLog(a){localStorage.setItem('market_log_v5',JSON.stringify(a));updateStats();pushCloud();}
+function saveInvoices(){localStorage.setItem('invoices_data',JSON.stringify(invoices));pushCloud();}
+async function cloudLogout(){if(cloudAuth)await cloudAuth.signOut()}
+
+// ===== INIT =====
+$("start").value=now();
+setInterval(()=>$("clock").textContent=new Date().toLocaleTimeString("ar-EG",{hour:"2-digit",minute:"2-digit"}),1000);
+loadSettings();
+renderLog();renderPending();calc();setTimeout(updateStats,100);renderInvoices();renderBackupList();
+</script>
+</body>
+</html>
